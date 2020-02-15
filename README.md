@@ -8,6 +8,8 @@ Currently works on smallish k's and n's
 The implementation uses no tricks, except
 offloading the heavy math to libgmp.
 
+Largest k to work from http://15k.org is 1999, 2001 does not work.
+
 ===
 
 Example 1:

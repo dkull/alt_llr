@@ -42,12 +42,11 @@ assert(P_generic(2, xmpz(17060344526)) == 291055355345818164674)
 assert(P_generic(2, xmpz(291055355345818164674)) == 84713219875480482488869261558493781526274)
 assert(P_generic(2, xmpz(84713219875480482488869261558493781526274)) == 7176329621671501453076568852489247776568376218009120175741348930545473480952323074)
 
-
 # Cache some values
 def is_riesel_prime(k, n):
     b = 2
     N = mpz((k * (b ** n)) -1)
-    precision = b * k * 4
+    precision = b * k * 8
     gmpy2.get_context().precision = precision 
     print("N digits = {} precision {} bits".format(N.num_digits(), precision))
 
@@ -97,15 +96,16 @@ def is_riesel_prime(k, n):
         print("op {} took {:5.2f}ms".format(op, took * 1000))
     return s == 0
 
-start = time.time()
-k = 0 if len(sys.argv) == 1 else int(sys.argv[1])
-n = 0 if len(sys.argv) == 2 else int(sys.argv[2])
-if k == 0 or n == 0:
-    print("give two (smallish) numbers as arguments")
-    exit(1)
-result = is_riesel_prime(k, n)
-print("{}*2^{}-1 = {}".format(k, n, result))
-end = time.time()
+if __name__ == '__main__':
+    start = time.time()
+    k = 0 if len(sys.argv) == 1 else int(sys.argv[1])
+    n = 0 if len(sys.argv) == 2 else int(sys.argv[2])
+    if k == 0 or n == 0:
+        print("give two (smallish) numbers as arguments")
+        exit(1)
+    result = is_riesel_prime(k, n)
+    print("{}*2^{}-1 = {}".format(k, n, result))
+    end = time.time()
 
-print("time: {:5.2f}ms".format((end - start) * 1000))
+    print("time: {:5.2f}ms".format((end - start) * 1000))
 
