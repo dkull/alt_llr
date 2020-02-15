@@ -20,8 +20,8 @@ def P_generic(m, x):
         Algorithm found in: https://vixra.org/pdf/1303.0195v1.pdf
 
         Test data can ve verified using:
-        https://www.wolframalpha.com/input/?i=2+*+chebyshevT%282*5%2F2%2C+chebyshevT%282%2F2%2C+2%29%29
-        https://www.wolframalpha.com/input/?i=7176329621671501453076568852489247776568376218009120175741348930545473480952323074&assumption=%22ClashPrefs%22+-%3E+%7B%22Math%22%7D
+        # for checking s0 for k=2001 b=2
+        https://www.wolframalpha.com/input/?i=2+*+chebyshevT%282*2001%2F2%2C+chebyshevT%282%2F2%2C+2%29%29
     """
     m = mpz(m)
     x = mpz(x)
@@ -35,15 +35,19 @@ def P_generic(m, x):
     x += inner
     x **= m
     x *= a
-    return xmpz(round_away(x))
+    result = xmpz(round_away(x))
+
+    return result
 
 
 # Cache some values
 def is_riesel_prime(k, n, debug=False):
     b = 2
-    N = mpz((k * (b ** n)) -1)
     precision = b * k * 8
-    gmpy2.get_context().precision = precision 
+    gmpy2.get_context().precision = precision
+
+    b = mpz(b)
+    N = mpz((mpz(k) * (b ** mpz(n))) - mpz(1))
     if debug:
         print("N digits = {} precision {} bits".format(N.num_digits(), precision))
 
@@ -56,9 +60,10 @@ def is_riesel_prime(k, n, debug=False):
     assert(k < b ** n)
     assert(n > 2)
 
-    b = mpz(b)
+    mpz2 = mpz(2)
+
     k = mpz(k)
-    s = s0 = P_generic(b * k // 2, P_generic(b // 2, xmpz(4)))
+    s = s0 = P_generic(b * k // mpz2, P_generic(b // mpz2, mpz(4)))
 
     if debug:
         if s.num_digits() > 20:
@@ -69,11 +74,11 @@ def is_riesel_prime(k, n, debug=False):
     begin = time.time()
     for i in range(1, n - 1):
         s1 = time.time()
-        s **= 2
+        s **= mpz2 
         e1 = time.time()
 
         s2 = time.time()
-        s -= 2
+        s -= mpz2
         e2 = time.time()
 
         s3 = time.time()
