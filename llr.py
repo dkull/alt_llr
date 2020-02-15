@@ -39,12 +39,13 @@ def P_generic(m, x):
 
 
 # Cache some values
-def is_riesel_prime(k, n):
+def is_riesel_prime(k, n, debug=False):
     b = 2
     N = mpz((k * (b ** n)) -1)
     precision = b * k * 8
     gmpy2.get_context().precision = precision 
-    print("N digits = {} precision {} bits".format(N.num_digits(), precision))
+    if debug:
+        print("N digits = {} precision {} bits".format(N.num_digits(), precision))
 
     assert(k % 2 == 1)
     assert(k < 2 ** n)
@@ -59,10 +60,11 @@ def is_riesel_prime(k, n):
     k = mpz(k)
     s = s0 = P_generic(b * k // 2, P_generic(b // 2, xmpz(4)))
 
-    if s.num_digits() > 20:
-        print("s0: digits ", s.num_digits(10))
-    else:
-        print("s0: ", s)
+    if debug:
+        if s.num_digits() > 20:
+            print("s0: digits ", s.num_digits(10))
+        else:
+            print("s0: ", s)
 
     begin = time.time()
     for i in range(1, n - 1):
@@ -75,8 +77,7 @@ def is_riesel_prime(k, n):
         e2 = time.time()
 
         s3 = time.time()
-        if i % 1 == 0:
-            s %= N
+        s %= N
         e3 = time.time()
 
         stats['**'] += e1 - s1
@@ -87,9 +88,10 @@ def is_riesel_prime(k, n):
             print(i, "/", n)
 
     end = time.time() - begin
-    print("core took {:5.5f}ms".format(end * 1000))
-    for op, took in stats.items():
-        print("op {} took {:5.2f}ms".format(op, took * 1000))
+    if debug:
+        print("core took {:5.5f}ms".format(end * 1000))
+        for op, took in stats.items():
+            print("op {} took {:5.2f}ms".format(op, took * 1000))
     return s == 0
 
 if __name__ == '__main__':
@@ -99,7 +101,7 @@ if __name__ == '__main__':
     if k == 0 or n == 0:
         print("give two (smallish) numbers as arguments")
         exit(1)
-    result = is_riesel_prime(k, n)
+    result = is_riesel_prime(k, n, debug=True)
     print("{}*2^{}-1 = {}".format(k, n, result))
     end = time.time()
 
