@@ -8,16 +8,21 @@ import gmpy2
 from gmpy2 import mpz, xmpz, mpfr, sqrt, c_mod, add, sub, mul, powmod, round2, round_away, divexact, is_prime
 from numpy.polynomial.chebyshev import chebval
 
-# raise the precision so at least our tests pass
-gmpy2.get_context().precision=2 ** 10
-assert(pow(xmpz(2), xmpz(3)) == 8)
-assert(pow(xmpz(7), xmpz(31)) == 157775382034845806615042743)
-
 stats = defaultdict(lambda: 0)
 
 sqrt4 = mpfr(sqrt(4))
 mpfr22 = mpfr(2 ** -2)
 def P_generic(m, x):
+    """
+        Used for finding s0, this is a generic implementation because m might be any value
+        and optimizations aren't needed anyway since this is called once per number.
+
+        Algorithm found in: https://vixra.org/pdf/1303.0195v1.pdf
+
+        Test data can ve verified using:
+        https://www.wolframalpha.com/input/?i=2+*+chebyshevT%282*5%2F2%2C+chebyshevT%282%2F2%2C+2%29%29
+        https://www.wolframalpha.com/input/?i=7176329621671501453076568852489247776568376218009120175741348930545473480952323074&assumption=%22ClashPrefs%22+-%3E+%7B%22Math%22%7D
+    """
     m = mpz(m)
     x = mpz(x)
     a = mpfr(mpfr(2)**-m)
@@ -32,15 +37,6 @@ def P_generic(m, x):
     x *= a
     return xmpz(round_away(x))
 
-# k:5 b:2 n:32
-# N = k * 2 ^ 32 - 1 = 21474836479
-assert(P_generic(1, xmpz(4)) == 4)
-assert(P_generic(5, xmpz(4)) == 724)
-assert(P_generic(2, xmpz(724)) == 524174)
-assert(P_generic(2, xmpz(524174)) == 274758382274)
-assert(P_generic(2, xmpz(17060344526)) == 291055355345818164674)
-assert(P_generic(2, xmpz(291055355345818164674)) == 84713219875480482488869261558493781526274)
-assert(P_generic(2, xmpz(84713219875480482488869261558493781526274)) == 7176329621671501453076568852489247776568376218009120175741348930545473480952323074)
 
 # Cache some values
 def is_riesel_prime(k, n):
