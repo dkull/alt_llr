@@ -8,7 +8,9 @@ Currently works on smallish k's and n's
 The implementation uses no tricks, except
 offloading the heavy math to libgmp.
 
-Largest k to work from http://15k.org is 1999, 2001 does not work.
+Tested with examples from  http://15k.org
+There does not seem to be an upper limit for working n's, but
+k's are working upto the circa 5 thousand range for some reason. Working on it.
 
 ===
 

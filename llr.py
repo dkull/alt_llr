@@ -43,13 +43,15 @@ def P_generic(m, x):
 # Cache some values
 def is_riesel_prime(k, n, debug=False):
     b = 2
-    precision = b * k * 8
+    precision = b * k * 2
     gmpy2.get_context().precision = precision
 
     b = mpz(b)
-    N = mpz((mpz(k) * (b ** mpz(n))) - mpz(1))
+    N = mpz((k * (b ** n)) - 1)
     if debug:
         print("N digits = {} precision {} bits".format(N.num_digits(), precision))
+        if N.num_digits() < 20:
+            print("N = ", N)
 
     assert(k % 2 == 1)
     assert(k < 2 ** n)
@@ -89,8 +91,9 @@ def is_riesel_prime(k, n, debug=False):
         stats['-'] += e2 - s2
         stats['%'] += e3 - s3
 
-        if i % 10000 == 0:
-            print(i, "/", n)
+        if debug:
+            if i % 10000 == 0:
+                print(i, "/", n)
 
     end = time.time() - begin
     if debug:
@@ -98,6 +101,8 @@ def is_riesel_prime(k, n, debug=False):
         for op, took in stats.items():
             print("op {} took {:5.2f}ms".format(op, took * 1000))
     return s == 0
+
+assert(is_riesel_prime(1999, 5141))
 
 if __name__ == '__main__':
     start = time.time()
