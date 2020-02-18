@@ -12,7 +12,7 @@ stats = defaultdict(lambda: 0)
 
 sqrt4 = mpfr(sqrt(4))
 mpfr22 = mpfr(2 ** -2)
-def P_generic(m, x):
+def P_generic(m, _x, debug=False):
     """
         Used for finding s0, this is a generic implementation because m might be any value
         and optimizations aren't needed anyway since this is called once per number.
@@ -24,7 +24,7 @@ def P_generic(m, x):
         https://www.wolframalpha.com/input/?i=2+*+chebyshevT%282*2001%2F2%2C+chebyshevT%282%2F2%2C+2%29%29
     """
     m = mpz(m)
-    x = mpz(x)
+    x = mpz(_x)
     a = mpfr(mpfr(2)**-m)
 
     inner = pow(x, mpz(2))
@@ -37,13 +37,16 @@ def P_generic(m, x):
     x *= a
     result = xmpz(round_away(x))
 
+    #if debug:
+    #    print("P: {} {} => {}".format(m, _x, x))
+
     return result
 
 
 # Cache some values
 def is_riesel_prime(k, n, debug=False):
     b = 2
-    precision = b * k * 2
+    precision = b * n * 8
     gmpy2.get_context().precision = precision
 
     b = mpz(b)
@@ -58,38 +61,48 @@ def is_riesel_prime(k, n, debug=False):
     assert(b % 2 == 0)
     assert(b % 3 != 0)
     assert(N % 3 != 0)
-    # assert(k % 6 == 1 or k % 6 == 5)
+    assert(k % 6 in (1, 5))
     assert(k < b ** n)
     assert(n > 2)
 
     mpz2 = mpz(2)
 
     k = mpz(k)
-    s = s0 = P_generic(b * k // mpz2, P_generic(b // mpz2, mpz(4)))
+    # s0
+    begin = time.time()
+    s = P_generic(b * k // mpz2, P_generic(b // mpz2, mpz(4), debug), debug)
+    diff = time.time() - begin
+    if debug:
+        print("s0: calculated in {:3.4f}s".format(diff))
+
+    # reduce precision, we do not need it in mainloop
+    precision = 100
 
     if debug:
         if s.num_digits() > 20:
-            print("s0: digits ", s.num_digits(10))
+            print("s0: {} digits last 10 digits: ...{}".format(s.num_digits(10), str(s)[-10:]))
         else:
             print("s0: ", s)
 
     begin = time.time()
     for i in range(1, n - 1):
-        s1 = time.time()
+        #s1 = time.time()
         s **= mpz2 
-        e1 = time.time()
+        #e1 = time.time()
 
-        s2 = time.time()
+        #s2 = time.time()
         s -= mpz2
-        e2 = time.time()
+        #e2 = time.time()
 
-        s3 = time.time()
+        #s3 = time.time()
         s %= N
-        e3 = time.time()
+        #e3 = time.time()
+        #if debug:
+        #    print("s", i, " => ", s)
 
-        stats['**'] += e1 - s1
-        stats['-'] += e2 - s2
-        stats['%'] += e3 - s3
+        #stats['**'] += e1 - s1
+        #stats['-'] += e2 - s2
+        #stats['%'] += e3 - s3
 
         if debug:
             if i % 10000 == 0:
@@ -102,6 +115,7 @@ def is_riesel_prime(k, n, debug=False):
             print("op {} took {:5.2f}ms".format(op, took * 1000))
     return s == 0
 
+# sanity check
 assert(is_riesel_prime(1999, 5141))
 
 if __name__ == '__main__':
