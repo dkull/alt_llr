@@ -10,9 +10,8 @@ pub fn main() void {
     const c: i32 = -1;
     var s0: f64 = 4.0;
 
-    //log("struct size {}\n", .{ @bitSizeOf(gw.gwhandle) });
     var ctx: gw.gwhandle = undefined;
-    gw.gwinit2(&ctx, 1144, gw.GWNUM_VERSION);
+    gw.gwinit2(&ctx, @bitSizeOf(gw.gwhandle) / 8, gw.GWNUM_VERSION);
     const _na = gw.gwsetup(&ctx, k, b, n, c);
 
     // init s0

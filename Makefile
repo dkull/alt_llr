@@ -12,7 +12,6 @@ zig:
 		-lc -lm \
 		-I. -I./Prime95/gwnum/ \
 		--library ./Prime95/gwnum/gwnum.a \
-		--object libdemo.a \
 		--name alt_llr_zig 
 
 zig2:
