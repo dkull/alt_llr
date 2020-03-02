@@ -2,15 +2,20 @@ const Builder = @import("std").build.Builder;
 
 pub fn build(b: *Builder) void {
     const mode = b.standardReleaseOptions();
-    const exe = b.addExecutable("altllr_zig", "alt_llr.zig");
+
+    const exe = b.addExecutable("alt_llr_zig", "alt_llr.zig");
     exe.setBuildMode(mode);
-    //exe.addCSourceFile("gwhandle_create.c", &[_][]const u8{"-std=c99"});
-
-    exe.addIncludeDir("./Prime95/gwnum/");
-
-    //const gwnum_lib = b.addStaticLibrary("./Prime95/gwnum/gwnum.a", null);
 
     exe.linkSystemLibrary("c");
+    exe.linkSystemLibrary("m");
+
+    exe.addIncludeDir(".");
+    exe.addLibPath(".");
+
+    exe.addIncludeDir("./Prime95/gwnum");
+    exe.linkSystemLibrary("gwnum");
+
+    exe.addObjectFile("libdemo.a");
 
     const run_cmd = exe.run();
     const run_step = b.step("run", "Run the thing");
