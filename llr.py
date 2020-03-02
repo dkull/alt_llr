@@ -71,6 +71,20 @@ def is_riesel_prime(k, n, debug=False):
     # s0
     begin = time.time()
     s = P_generic(b * k // mpz2, P_generic(b // mpz2, mpz(4), debug), debug)
+    s %= N
+
+    # WRITE TO FILE
+    foob = int(s)
+    byte_count = int(foob.bit_length()/8) + 1
+    while byte_count % 4 != 0:
+        byte_count += 1
+    out = foob.to_bytes(byte_count, byteorder='little')
+    f = open("{}.s0".format(int(k)), "wb")
+    #f.write(int(k).to_bytes(4, byteorder='big'))
+    f.write(out)
+    f.close()
+    # WRITE TO FILE END
+
     diff = time.time() - begin
     if debug:
         print("s0: calculated in {:3.4f}s".format(diff))
