@@ -10,8 +10,8 @@ zig:
 	#--object libgwnum.a
 	zig build-exe --release-fast --single-threaded --strip -mcpu native alt_llr.zig \
 		-lc -lm \
-		-I. -I./Prime95/gwnum/ \
-		--library ./Prime95/gwnum/gwnum.a \
+		-I./Prime95/gwnum/ --library ./Prime95/gwnum/gwnum.a \
+		-I./home/tanel/software/gmp-6.2.0 --library /home/tanel/software/gmp-6.2.0/.libs/libgmp.a \
 		--name alt_llr_zig 
 
 zig2:

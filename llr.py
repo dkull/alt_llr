@@ -117,6 +117,7 @@ def is_riesel_prime(k, n, debug=False):
         #stats['**'] += e1 - s1
         #stats['-'] += e2 - s2
         #stats['%'] += e3 - s3
+        print(i)
 
         if debug:
             if i % 10000 == 0:
