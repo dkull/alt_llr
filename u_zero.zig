@@ -7,9 +7,7 @@ const gw = c.gw;
 
 const glue = @import("glue.zig");
 
-const JacobiError = error {
-    BadArguments   
-};
+const JacobiError = error{BadArguments};
 
 /// caller owns the result
 pub fn calculate_N(k: u32, n: u32) gmp.mpz_t {
@@ -19,7 +17,7 @@ pub fn calculate_N(k: u32, n: u32) gmp.mpz_t {
     gmp.mpz_set_ui(&N, 2);
     // raise b^n
     gmp.mpz_pow_ui(&N, &N, n);
-    // multiply with k 
+    // multiply with k
     gmp.mpz_mul_ui(&N, &N, k);
     // and subtract the 1
     gmp.mpz_sub_ui(&N, &N, 1);
@@ -31,7 +29,7 @@ pub fn find_P(N: gmp.mpz_t) u32 {
     var jacobi_input_plus: gmp.mpz_t = undefined;
     gmp.mpz_init(&jacobi_input_minus);
     gmp.mpz_init(&jacobi_input_plus);
-    
+
     var P: u32 = 5;
     while (P < 1000) {
         gmp.mpz_set_ui(&jacobi_input_minus, P - 2);
@@ -49,7 +47,6 @@ pub fn find_P(N: gmp.mpz_t) u32 {
 }
 
 fn fast(_m: u32, _x: gmp.mpz_t) gmp.mpz_t {
-
     var one: gmp.mpf_t = undefined;
     gmp.mpf_init(&one);
     gmp.mpf_set_ui(&one, 1);
@@ -68,7 +65,7 @@ fn fast(_m: u32, _x: gmp.mpz_t) gmp.mpz_t {
 
     gmp.mpf_init(&a);
     // precision sets need to be exactly around float and release
-    gmp.mpf_set_default_prec(1024*1024*87);
+    gmp.mpf_set_default_prec(1024);
     gmp.mpf_init(&float);
     gmp.mpf_init(&release);
     gmp.mpf_set_default_prec(64);
@@ -79,13 +76,14 @@ fn fast(_m: u32, _x: gmp.mpz_t) gmp.mpz_t {
 
     gmp.mpf_div(&a, &one, &a);
     gmp.mpf_pow_ui(&a, &a, _m);
-    
+
     gmp.mpz_pow_ui(&inner, &x, 2);
     gmp.mpz_sub_ui(&inner, &inner, 4);
 
     gmp.mpf_set_z(&float, &inner);
     gmp.mpf_sqrt(&float, &float);
-    log("m {}\n", .{_m});
+
+    // move pow and mul earlier. use mod pow, b/c m is huge and is a power
 
     gmp.mpf_set_z(&release, &x);
     gmp.mpf_add(&release, &release, &float);
@@ -109,8 +107,7 @@ fn fast(_m: u32, _x: gmp.mpz_t) gmp.mpz_t {
 /// if you have the Jacoby calculation results
 /// caller owns the result
 pub fn do_fast_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
-    // P_generic(b * k // mpz2, P_generic(b // mpz2, mpz(4), debug), debug) 
-    
+    // P_generic(b * k // mpz2, P_generic(b // mpz2, mpz(4), debug), debug)
     var P: gmp.mpz_t = undefined;
     gmp.mpz_init(&P);
     gmp.mpz_set_ui(&P, _P);
@@ -127,9 +124,8 @@ pub fn do_fast_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
 /// caller owns the result
 pub fn do_lucas_sequence(k: u32, P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
     // TODO: use gwnum in here
-    // Vk(P,1) mod N == 
+    // Vk(P,1) mod N ==
     //  xn = P * Xn-1 - Q * xn-2
-
     var luc_min2: gmp.mpz_t = undefined;
     var luc_min1: gmp.mpz_t = undefined;
     gmp.mpz_init(&luc_min2);
@@ -164,7 +160,7 @@ pub fn do_lucas_sequence(k: u32, P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
         // luc_min1 is now correct
         gmp.mpz_swap(&buf, &luc_min1);
         if (i < 32) {
-            log("i:{} > {}\n", .{i, gmp.mpz_get_ui(&luc_min1)});
+            log("i:{} > {}\n", .{ i, gmp.mpz_get_ui(&luc_min1) });
         }
         i += 1;
         if (i % 500 == 0) {
@@ -195,7 +191,7 @@ fn test_lucas() void {
     var N: gmp.mpz_t = calculate_N(100, 1000);
     var k: u32 = 0;
     var P: u32 = 7;
-    while (k < 36) { 
+    while (k < 36) {
         const foo: gmp.mpz_t = do_lucas_sequence(k, P, 1, N);
         log("> {} {}\n", .{ k, gmp.mpz_get_ui(&foo) });
         k += 1;
@@ -207,16 +203,16 @@ pub fn find_rodseth_u0(k: u32, n: u32, u_zero_out: *gmp.mpz_t) void {
     var N: gmp.mpz_t = calculate_N(k, n);
     log("N is {} digits\n", .{gmp.mpz_sizeinbase(&N, 10)});
 
-    //test_lucas(); 
+    //test_lucas();
 
     var P: u32 = undefined;
     if (k % 3 != 0) {
         log("SHORTCUT: using P=4 because [k % 3 != 0]\n", .{});
-        P = 4; 
+        P = 4;
     } else {
         // do the Jacobi to find P
         P = find_P(N);
-        log("found P {} that satisfied the Jacobi symbols\n", .{ P });
+        log("found P {} that satisfied the Jacobi symbols\n", .{P});
     }
 
     // calculate and store lucas sequence
