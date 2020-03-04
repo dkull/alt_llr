@@ -23,6 +23,7 @@ def P_generic(m, _x, debug=False):
         # for checking s0 for k=2001 b=2
         https://www.wolframalpha.com/input/?i=2+*+chebyshevT%282*2001%2F2%2C+chebyshevT%282%2F2%2C+2%29%29
     """
+    print("M ", m)
     m = mpz(m)
     x = mpz(_x)
     a = mpfr(mpfr(2)**-m)
@@ -37,8 +38,8 @@ def P_generic(m, _x, debug=False):
     x *= a
     result = xmpz(round_away(x))
 
-    #if debug:
-    #    print("P: {} {} => {}".format(m, _x, x))
+    if debug:
+        print("P: {} {} => {}".format(m, _x, x))
 
     return result
 
@@ -117,7 +118,6 @@ def is_riesel_prime(k, n, debug=False):
         #stats['**'] += e1 - s1
         #stats['-'] += e2 - s2
         #stats['%'] += e3 - s3
-        print(i)
 
         if debug:
             if i % 10000 == 0:

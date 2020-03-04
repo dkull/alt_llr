@@ -11,10 +11,16 @@ const u_zero = @import("u_zero.zig");
 
 const VERSION = "0.0.1";
 
+
+// required precision 102765*2^333354[100355 digits] == 1KB*227 (0.44)
+// required precision     81*2^240743[72473 digits] == 130 (0.62)
+// required precision  17295*2^217577[65502 digits] == 1KB*54 (0.31) [fft 16K]
+// required precision 39547695*2^454240[136748 digits] == 1MB*86 (0.43) [fft 48K]
+
 pub fn main() !void {
     try stdout.print("=== RPT - Riesel Prime Tester v{} [GWNUM: {} GMP: {}.{}.{}] ===\n", .{ VERSION, gw.GWNUM_VERSION , gmp.__GNU_MP_VERSION, gmp.__GNU_MP_VERSION_MINOR, gmp.__GNU_MP_VERSION_MINOR });
 
-    const k: u32 = 39;
+    const k: u32 = 39547695;
     const b: u32 = 2;
     const n: u32 = 454240;
     const c_: i32 = -1;
@@ -26,7 +32,7 @@ pub fn main() !void {
     gw.gwinit2(&ctx, @sizeOf(gw.gwhandle), gw.GWNUM_VERSION);
 
     // gwnum magic for speed and (un)safety
-    ctx.safety_margin = -1.0;
+    //ctx.safety_margin = -1.0;
     ctx.use_large_pages = 1;
     gw.gwset_square_carefully_count(&ctx, -1);
 
