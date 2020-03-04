@@ -277,25 +277,27 @@ pub fn find_rodseth_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) voi
         const start_jacobi = std.time.milliTimestamp();
         P = find_P(N);
         const jacobi_took = std.time.milliTimestamp() - start_jacobi;
-        log("found P/V1: {} using Jacobi symbols in {}ms\n", .{ P, jacobi_took });
+        log("found P/V1: {} using Jacobi Symbols in {}ms\n", .{ P, jacobi_took });
     }
 
     const start_lucas = std.time.milliTimestamp();
 
+    // version 1 - slow
     // calculate and store lucas sequence - slow
-    // does all the sequence steps
+    // does all the sequence steps in a loop
     //u_zero_out.* = do_iterative_lucas_sequence(k, P, 1, N);
 
+    // version 2 - slow
     // fast lucas sequence process does deep negative powers of k
     // and requires high precision - limiting with large k's
-    //gmp.mpf_set_default_prec(k*2+(1024));
     //u_zero_out.* = do_fast_lucas_sequence(k, P, 1, N);
 
+    // version 1 - fast
     // is O(log(len(k)))
     u_zero_out.* = do_fastest_lucas_sequence(k, P, 1, N);
 
     const lucas_took = std.time.milliTimestamp() - start_lucas;
-    log("calculated lucas sequence in {}ms\n", .{lucas_took});
+    log("calculated Lucas Sequence in {}ms\n", .{lucas_took});
 
     // do the mod just in case it's not done
     gmp.mpz_mod(u_zero_out, u_zero_out, &N);

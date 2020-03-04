@@ -10,6 +10,7 @@ const gmp = c.gmp;
 const glue = @import("glue.zig");
 const u_zero = @import("u_zero.zig");
 const test_data = @import("test_data.zig");
+const helper = @import("helper.zig");
 
 const VERSION = "0.0.1";
 
@@ -30,6 +31,8 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32) !bool {
     ctx.safety_margin = -1.0;
     ctx.use_large_pages = 1;
     gw.gwset_square_carefully_count(&ctx, -1);
+    ctx.num_threads = 4;
+    ctx.will_hyperthread = 4;
 
     // tell gwnum in what modulus are we calculating in
     const _na = gw.gwsetup(&ctx, k, b, n, c_);
@@ -48,7 +51,7 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32) !bool {
     }
     log("step 1. done - u0 digits {} and took {}ms\n", .{ u_zero_digits, u0_took });
 
-    // moved u0 from gmp to gw
+    // move u0 from gmp to gw
     var u: gw.gwnum = gw.gwalloc(&ctx);
     glue.gmp_to_gw(u0_gmp, u, &ctx);
 
@@ -58,12 +61,13 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32) !bool {
     var i: u32 = 1;
     while (i < n - 1) {
         if (@mod(i, 50000) == 0) {
-            log("progress {}%\n", .{(i * 100 / (n - 1))});
+            log("{}%.", .{(i * 100 / (n - 1))});
         }
         gw.gwsetaddin(&ctx, -2);
         gw.gwsquare2(&ctx, u, u);
         i += 1;
     }
+    log("\n", .{});
     const llr_took = std.time.milliTimestamp() - llr_start;
     log("step 2. done - llr took {}ms\n", .{llr_took});
 
@@ -71,15 +75,28 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32) !bool {
 
     const residue_zero = gw.gwiszero(&ctx, u) == 1;
     if (residue_zero) {
-        try stdout.print("#> IS PRIME\n", .{});
+        try stdout.print("#> {}*{}^{}{} [{} digits] IS PRIME\n", .{ k_, b, n, c_, n_digits });
     } else {
-        try stdout.print("#> is not prime\n", .{});
+        try stdout.print("#> {}*{}^{}{} [{} digits] is not prime\n", .{ k_, b, n, c_, n_digits });
     }
     return residue_zero;
 }
 
 pub fn main() !void {
     try stdout.print("=== RPT - Riesel Prime Tester v{} [GWNUM: {} GMP: {}.{}.{}] ===\n", .{ VERSION, gw.GWNUM_VERSION, gmp.__GNU_MP_VERSION, gmp.__GNU_MP_VERSION_MINOR, gmp.__GNU_MP_VERSION_MINOR });
+    const args = try std.process.argsAlloc(std.heap.page_allocator);
+    defer std.process.argsFree(std.heap.page_allocator, args);
+
+    var k: u32 = 0;
+    var n: u32 = 0;
+    if (args.len == 3) {
+        k = @intCast(u32, try helper.parseU64(args[1], 10));
+        n = @intCast(u32, try helper.parseU64(args[2], 10));
+    } else {
+        // https://primes.utm.edu/primes/page.php?id=85376
+        k = 39547695;
+        n = 506636;
+    }
 
     //const k: u32 = 13;
     //const n: u32 = 17;
@@ -87,8 +104,10 @@ pub fn main() !void {
     //const n: u32 = 217577;
     //const k: u32 = 39547695;
     //const n: u32 = 454240;
-    const k: u32 = 39547695;
-    const n: u32 = 506636;
+    //const k: u32 = 39547695;
+    //const n: u32 = 506636;
+    //const k: u32 = 8331405;
+    //const n: u32 = 829367;
     //const k: u32 = 133603707;
     //const n: u32 = 100014;
 
