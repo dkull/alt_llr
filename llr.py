@@ -23,7 +23,7 @@ def P_generic(m, _x, debug=False):
         # for checking s0 for k=2001 b=2
         https://www.wolframalpha.com/input/?i=2+*+chebyshevT%282*2001%2F2%2C+chebyshevT%282%2F2%2C+2%29%29
     """
-    print("M ", m)
+    print("M {} X {}".format(m, _x))
     m = mpz(m)
     x = mpz(_x)
     a = mpfr(mpfr(2)**-m)
@@ -31,15 +31,18 @@ def P_generic(m, _x, debug=False):
     inner = pow(x, mpz(2))
     inner -= mpz(4)
     inner = sqrt(inner)
+    print("inner sqrt({}^2-4): ".format(x), inner)
     #inner = x - (sqrt4 / x)  # potential replacement in cases x >= 5
 
     x += inner
+    print("x before pow: {:.64f}".format(x))
+    print("a before pow: {:.64f}".format(a))
     x **= m
     x *= a
     result = xmpz(round_away(x))
 
     if debug:
-        print("P: {} {} => {}".format(m, _x, x))
+        print("P_gen: {} {} => {}".format(m, _x, x))
 
     return result
 
@@ -48,6 +51,7 @@ def P_generic(m, _x, debug=False):
 def is_riesel_prime(k, n, debug=False):
     b = 2
     precision = b * n * 8
+    #precision = 1024
     gmpy2.get_context().precision = precision
 
     b = mpz(b)
@@ -98,6 +102,7 @@ def is_riesel_prime(k, n, debug=False):
             print("s0: {} digits last 10 digits: ...{}".format(s.num_digits(10), str(s)[-10:]))
         else:
             print("s0: ", s)
+            pass
 
     begin = time.time()
     for i in range(1, n - 1):
@@ -131,7 +136,7 @@ def is_riesel_prime(k, n, debug=False):
     return s == 0
 
 # sanity check
-assert(is_riesel_prime(1999, 5141))
+#assert(is_riesel_prime(1999, 5141))
 
 if __name__ == '__main__':
     start = time.time()
