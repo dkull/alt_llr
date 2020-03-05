@@ -64,9 +64,11 @@ pub fn do_fastest_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_
     gmp.mpz_set_ui(&one, 1);
 
     // setup
-    gmp.mpz_set_ui(&y, _P);
+    // x = v1
     gmp.mpz_set_ui(&x, _P);
 
+    // y = (v1*v1) - 2 mod N
+    gmp.mpz_set_ui(&y, _P);
     gmp.mpz_mul(&y, &y, &y);
     gmp.mpz_sub_ui(&y, &y, 2);
     gmp.mpz_powm(&y, &y, &one, &N);
@@ -113,10 +115,12 @@ pub fn do_fastest_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_
         }
         i -= 1;
     }
-    // finish up: x *= y; x -= P; x %= N
+    // finish up
+    // x *= y; x -= P; x %= N
     gmp.mpz_mul(&x, &x, &y);
     gmp.mpz_sub_ui(&x, &x, _P);
     gmp.mpz_powm(&x, &x, &one, &N);
+
     return x;
 }
 
@@ -139,7 +143,7 @@ fn fast(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
     var inner: gmp.mpf_t = undefined;
     var buf: gmp.mpf_t = undefined;
 
-    // we do not automatigally calculate the required precision, but it seems
+    // we do not automagically calculate the required precision, but it seems
     // to be a function of at least 2 numbers. 1 is k, the other is? [haven't got to it yet]
     // this number will be unusably large for k's in the millions
     const super_precision: u32 = 1024;
@@ -187,7 +191,7 @@ fn fast(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
 /// https://vixra.org/pdf/1303.0195v1.pdf
 /// i figured it out on my own that the constant 4 in Pb/2(4) is actually the P
 /// value we found with the Jacoby symbol. so this is a general U0 finder
-/// if you have the Jacoby calculation results
+/// if you have the Jacobi calculation results
 /// currently unused as it requires too much floating precision with large k's
 /// and thus get's unbearably slow with k's in the millions
 /// caller owns the result

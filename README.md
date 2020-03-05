@@ -7,13 +7,15 @@ This project is in no way 'production ready', it does not check errors and does 
 
 Also, it is important to note that this software and Jean Penné's software (LLR64 http://jpenne.free.fr/index2.html) do (almost) exactly the same thing, using the same libraries. So there is no performance gains to be had - we both rely on the speed of the GWNum library. LLR64 is probably faster in many cases (possibly due to using C/GCC or some other magic), even though it uses error checking. But I have noticed that RPT is a smidge faster when using larger k's in threaded mode.
 
+k and n are currently limited to unsigned 32 bit values (~4.29Bil) for arbitrary reasons. I don't see a need for supporting larger values.
+
 What this project is
 --------------------
-This is me being interested in how the Lucas-Lehmer-Riesel primality proving works - from end to end. I first ran Jean's LLR64 software in 2007 and found my first primes that got into the TOP5000(https://primes.utm.edu/primes/lists/all.txt). I stopped for over a decade, but the topic always lingered in my mind. In 2019 I started sieving/testing again and the curiosity got the best of me and I decided to implement most of what LLR64 does with Riesel Primes.
+This is me being interested in how the Lucas-Lehmer-Riesel primality proving works - from end to end. I first ran Jean's LLR64 software in 2007 and found my first primes that got into the TOP5000 (https://primes.utm.edu/primes/lists/all.txt). I stopped for over a decade, but the topic always lingered in my mind. In 2019 I started sieving/testing again and the curiosity got the best of me and I decided to implement most of what LLR64 does with Riesel Primes.
 
 The core LLR loop is actually trivial and can be implemented in no time. Much of the complexity comes from needing to find U0 for k > 1. Eg. for Mersenne primes (k=1) U0==4. For k>1 U0 needs to be calculated, and naive implementations are slow for large k's. I have three different (naive, less-naive and optimal) implementations in this project. The optimal one is the same one used in LLR64, which runs in O(log(bitlen(k))) time.
 
-This project will probably also implement the PRP primality testing used in PFGW(https://sourceforge.net/projects/openpfgw/)
+This project will probably also implement the PRP primality testing used in PFGW (https://sourceforge.net/projects/openpfgw/)
 
 What this project is not
 ------------------------
@@ -21,8 +23,10 @@ This is not an attempt to replace LLR64. LLR64 has a lot of years of work behind
 
 Building
 --------
-Requires the Zig compiler. And GWNum and GMP in the project directory. 
-Both library dependencies need to be built first in their respective ways. They are not complicated to build. The Zig compiler can be downloaded in binary form from https://ziglang.org/download/
+Requires the Zig compiler. GWNum and GMP need to be directly in the project directory. 
+Both GWnum and GMP dependencies need to be built first in their respective ways. They are not complicated to build. The Zig compiler can be downloaded in binary form from https://ziglang.org/download/
+
+I am considering using only GWNum and dropping GMP. But it seems like a safe bet to keep onto GMP for other Riesel Prime proving/PRP methods.
 
 Running
 -------
