@@ -5,11 +5,11 @@ Note
 ----
 This project is in no way 'production ready', it does not check errors and does not save state. I wouldn't recommend swapping out your LLR64's for this (yet). Although I have noticed that if a CPU is stable with LLR (for a while), it should be okay to run it without error checking...am I right about this?
 
-Also, it is important to note that this software and Jean Penné's software (LLR64 http://jpenne.free.fr/index2.html) do (almost) exactly the same thing, using the same libraries. So there is no performance gains to be had - we both rely on the speed of the GWNum library. LLR is probably faster in many cases (possibly due to using C/GCC or some other magic), even though it uses error checking. But I have noticed that RPT is a smidge faster when using larger k's in threaded mode.
+Also, it is important to note that this software and Jean Penné's software (LLR64 http://jpenne.free.fr/index2.html) do (almost) exactly the same thing, using the same libraries. So there is no performance gains to be had - we both rely on the speed of the GWNum library. LLR64 is probably faster in many cases (possibly due to using C/GCC or some other magic), even though it uses error checking. But I have noticed that RPT is a smidge faster when using larger k's in threaded mode.
 
 What this project is
 --------------------
-This is me being interested in how the Lucas-Lehmer-Riesel primality proving works - from end to end. I first ran Jean's LLR software in 2007 and found my first primes that got into the TOP5000(https://primes.utm.edu/primes/lists/all.txt). I stopped for over a decade, but the topic always lingered in my mind. In 2019 I started sieving/testing again and the curiosity got the best of me and I decided to implement most of what LLR64 does with Riesel Primes.
+This is me being interested in how the Lucas-Lehmer-Riesel primality proving works - from end to end. I first ran Jean's LLR64 software in 2007 and found my first primes that got into the TOP5000(https://primes.utm.edu/primes/lists/all.txt). I stopped for over a decade, but the topic always lingered in my mind. In 2019 I started sieving/testing again and the curiosity got the best of me and I decided to implement most of what LLR64 does with Riesel Primes.
 
 The core LLR loop is actually trivial and can be implemented in no time. Much of the complexity comes from needing to find U0 for k > 1. Eg. for Mersenne primes (k=1) U0==4. For k>1 U0 needs to be calculated, and naive implementations are slow for large k's. I have two different (naive and less-naive) implementations in this project, though they are not currently used. The one used is the same one used in LLR64, which runs in O(log(bitlen(k))) time.
 
