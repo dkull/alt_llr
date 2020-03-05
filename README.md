@@ -11,7 +11,7 @@ What this project is
 --------------------
 This is me being interested in how the Lucas-Lehmer-Riesel primality proving works - from end to end. I first ran Jean's LLR64 software in 2007 and found my first primes that got into the TOP5000(https://primes.utm.edu/primes/lists/all.txt). I stopped for over a decade, but the topic always lingered in my mind. In 2019 I started sieving/testing again and the curiosity got the best of me and I decided to implement most of what LLR64 does with Riesel Primes.
 
-The core LLR loop is actually trivial and can be implemented in no time. Much of the complexity comes from needing to find U0 for k > 1. Eg. for Mersenne primes (k=1) U0==4. For k>1 U0 needs to be calculated, and naive implementations are slow for large k's. I have two different (naive and less-naive) implementations in this project, though they are not currently used. The one used is the same one used in LLR64, which runs in O(log(bitlen(k))) time.
+The core LLR loop is actually trivial and can be implemented in no time. Much of the complexity comes from needing to find U0 for k > 1. Eg. for Mersenne primes (k=1) U0==4. For k>1 U0 needs to be calculated, and naive implementations are slow for large k's. I have three different (naive, less-naive and optimal) implementations in this project. The optimal one is the same one used in LLR64, which runs in O(log(bitlen(k))) time.
 
 This project will probably also implement the PRP primality testing used in PFGW(https://sourceforge.net/projects/openpfgw/)
 
