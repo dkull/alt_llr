@@ -1,4 +1,4 @@
-.PHONY = zig v 
+.PHONY = v
 .SILENT:
 
 all: rpt
@@ -6,14 +6,14 @@ all: rpt
 rpt: *.zig
 	zig build-exe --release-fast --single-threaded --strip -mcpu native rpt.zig \
 		-lc -lm \
-		-I./Prime95/gwnum/ --library ./Prime95/gwnum/gwnum.a \
+		-I./Prime95-29.8b6/gwnum/ --library ./Prime95-29.8b6/gwnum/gwnum.a \
 		-I./gmp-6.2.0 --library ./gmp-6.2.0/.libs/libgmp.a \
 		--name rpt
 
-rpt_release:
+rpt_release: *.zig
 	zig build-exe --release-small --single-threaded --strip -mcpu x86_64 rpt.zig \
 		-lc -lm \
-		-I./Prime95/gwnum/ --library ./Prime95/gwnum/gwnum.a \
+		-I./Prime95-29.8b6/gwnum/ --library ./Prime95-29.8b6/gwnum/gwnum.a \
 		-I./gmp-6.2.0 --library ./gmp-6.2.0/.libs/libgmp.a \
 		--name rpt_release
 	PATH=/home/tanel/software/upx-3.96-amd64_linux/:$PATH \

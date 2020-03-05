@@ -8,6 +8,8 @@ This project is in no way 'production ready', it does not check errors and does 
 Also, it is important to note that this software and Jean Penné's software (LLR64 http://jpenne.free.fr/index2.html) do (almost) exactly the same thing, using the same libraries. So there is no performance gains to be had - we both rely on the speed of the GWNum library. LLR64 is probably faster in many cases (possibly due to using C/GCC or some other magic), even though it uses error checking. But I have noticed that RPT is a smidge faster when using larger k's in threaded mode.
 
 k and n are currently limited to unsigned 32 bit values (~4.29Bil) for arbitrary reasons. I don't see a need for supporting larger values.
+As Riesel states in his paper (Prime Numbers and Computer Methods for Factorization p126 [2012]) this condition must hold: 2^n > 4k for the test to work.
+This software does currently not notify you if this condition does not hold.
 
 What this project is
 --------------------
@@ -23,10 +25,36 @@ This is not an attempt to replace LLR64. LLR64 has a lot of years of work behind
 
 Building
 --------
-Requires the Zig compiler. GWNum and GMP need to be directly in the project directory. 
+
+```
+Zig: tested with 0.5-master (not a stable version)
+GWnum: 29.8
+GMP: 6.2.0
+```
+
+Requires the Zig compiler. GWnum(included in Prime95) and GMP need to be directly in the project directory. 
 Both GWnum and GMP dependencies need to be built first in their respective ways. They are not complicated to build. The Zig compiler can be downloaded in binary form from https://ziglang.org/download/
 
-I am considering using only GWNum and dropping GMP. But it seems like a safe bet to keep onto GMP for other Riesel Prime proving/PRP methods.
+I am considering using only GWnum and dropping GMP. But it seems like a safe bet to keep onto GMP for other Riesel Prime proving/PRP methods.
+
+```
+# install Zig to $PATH first
+
+wget https://gmplib.org/download/gmp/gmp-6.2.0.tar.lz
+tar xzf gmp-6.2.0.tar.lz
+cd gmp-6.2.0
+./configure
+make
+cd -
+
+wget https://github.com/shafferjohn/Prime95/archive/v29.8b6.tar.gz
+tar xzf v29.8b6.tar.gz
+#edit: ./Prime95-29.8b6/gwnum/gwnum.h
+#add: #include <stddef.h> to beginning of file
+C_INCLUDE_PATH=../../gmp-6.2.0/ make -C Prime95-29.8b6/gwnum/ -f make64
+
+make
+```
 
 Running
 -------
