@@ -37,20 +37,17 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     // set gwnum modulus to N
     const _na = gw.gwsetup(&ctx, k, b, n, c_);
 
-    // calculate u0
-    log("step 1. find u0 ...\n", .{});
+    // calculate U0
+    log("step 1. find U0 ...\n", .{});
     var u0_gmp: gmp.mpz_t = undefined;
-    var u0_start = std.time.milliTimestamp();
     u_zero.find_u0(k_, n, N, &u0_gmp);
-    const u0_took = std.time.milliTimestamp() - u0_start;
 
     // print the u0 if it's small enough
     if (n_digits <= 8) {
-        log("u0: {}\n", .{gmp.mpz_get_ui(&u0_gmp)});
+        log("U0: {}\n", .{gmp.mpz_get_ui(&u0_gmp)});
     }
-    log("step 1. u0 calc done - took {}ms\n", .{u0_took});
 
-    // move u0 from gmp to gw
+    // move U0 from gmp to gw
     var u: gw.gwnum = gw.gwalloc(&ctx);
     glue.gmp_to_gw(u0_gmp, u, &ctx);
 
@@ -67,7 +64,7 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     }
     log("\n", .{});
     const llr_took = std.time.milliTimestamp() - llr_start;
-    log("step 2. done - llr took {}ms\n", .{llr_took});
+    log("llr took {}ms\n", .{llr_took});
 
     const residue_zero = gw.gwiszero(&ctx, u) == 1;
     if (residue_zero) {

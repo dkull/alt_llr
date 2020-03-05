@@ -186,7 +186,7 @@ fn fast(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
 
 /// https://vixra.org/pdf/1303.0195v1.pdf
 /// i figured it out on my own that the constant 4 in Pb/2(4) is actually the P
-/// value we found with the Jacoby symbol. so this is a general u0 finder
+/// value we found with the Jacoby symbol. so this is a general U0 finder
 /// if you have the Jacoby calculation results
 /// currently unused as it requires too much floating precision with large k's
 /// and thus get's unbearably slow with k's in the millions
@@ -204,7 +204,7 @@ pub fn do_fast_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
     // technically it should be 'b * k / 2', but b is 2 for us, so just 'k'
     const result = fast(k, buf, N);
 
-    // result is actually a working u0
+    // result is actually a working U0
     return result;
 }
 
@@ -269,7 +269,7 @@ pub fn find_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) void {
         const start_jacobi = std.time.milliTimestamp();
         V1 = find_V1(N);
         const jacobi_took = std.time.milliTimestamp() - start_jacobi;
-        log("found V1: {} using Jacobi Symbols in {}ms\n", .{ V1, jacobi_took });
+        log("found V1 [{}] using Jacobi Symbols in {}ms\n", .{ V1, jacobi_took });
     }
 
     const start_lucas = std.time.milliTimestamp();
@@ -289,7 +289,7 @@ pub fn find_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) void {
     u_zero_out.* = do_fastest_lucas_sequence(k, V1, 1, N);
 
     const lucas_took = std.time.milliTimestamp() - start_lucas;
-    log("calculated Lucas Sequence in {}ms\n", .{lucas_took});
+    log("found U0 using Lucas Sequence in {}ms\n", .{lucas_took});
 
     // do the mod just in case it's not done
     gmp.mpz_mod(u_zero_out, u_zero_out, &N);

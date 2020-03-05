@@ -2,6 +2,7 @@ const k, n, b, c;  # they have to have values
 const N = k * b ^ n - 1;
 
 # find V1 (as 'u')
+# this uses Jacobi Symbols
 while (u := 1) : () : (u += 1) {
     if jacobi(u - 2, N) == 1 && jacobi(u + 2, N) == -1 {
         break
@@ -9,6 +10,7 @@ while (u := 1) : () : (u += 1) {
 }
 
 # fastest method [ O(log(bitlen(k))) ] to find u0 (as u)
+# this calculates the value of the Lucas Sequence
 x = u
 y = (u * u) - 2
 k_bitlen = bitlen(k)
@@ -25,7 +27,7 @@ x = x * x
 x = x - u
 x = x mod N
 
-# llr
+# Lucas-Lehmer-Riesel primality test starting from U0 (as u)
 while (i := 1) : (i < n - 1) : (i += 1) {
     (u * u) - 2
 }

@@ -3,7 +3,7 @@
 
 all: rpt
 
-rpt:
+rpt: *.zig
 	zig build-exe --release-fast --single-threaded --strip -mcpu native rpt.zig \
 		-lc -lm \
 		-I./Prime95/gwnum/ --library ./Prime95/gwnum/gwnum.a \
