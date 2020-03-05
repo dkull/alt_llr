@@ -22,32 +22,32 @@ pub fn calculate_N(k: u32, n: u32) gmp.mpz_t {
     return N;
 }
 
-pub fn find_P(N: gmp.mpz_t) u32 {
-    var jacobi_input_minus: gmp.mpz_t = undefined;
-    var jacobi_input_plus: gmp.mpz_t = undefined;
-    gmp.mpz_init(&jacobi_input_minus);
-    gmp.mpz_init(&jacobi_input_plus);
+pub fn find_V1(N: gmp.mpz_t) u32 {
+    var minus: gmp.mpz_t = undefined;
+    var plus: gmp.mpz_t = undefined;
+    gmp.mpz_init(&minus);
+    gmp.mpz_init(&plus);
 
-    var P: u32 = 1;
-    while (P < 1000) {
-        gmp.mpz_set_ui(&jacobi_input_minus, P - 2);
-        gmp.mpz_set_ui(&jacobi_input_plus, P + 2);
-        const jacobi_minus = gmp.mpz_jacobi(&jacobi_input_minus, &N);
-        const jacobi_plus = gmp.mpz_jacobi(&jacobi_input_plus, &N);
-        if (jacobi_minus == 1 and jacobi_plus == -1) {
-            gmp.mpz_clear(&jacobi_input_minus);
-            gmp.mpz_clear(&jacobi_input_plus);
-            return P;
+    var V1: u32 = 1;
+    while (V1 < 1000) {
+        gmp.mpz_set_ui(&minus, V1 - 2);
+        gmp.mpz_set_ui(&plus, V1 + 2);
+        const minus_val = gmp.mpz_jacobi(&minus, &N);
+        const plus_val = gmp.mpz_jacobi(&plus, &N);
+        if (minus_val == 1 and plus_val == -1) {
+            gmp.mpz_clear(&minus);
+            gmp.mpz_clear(&plus);
+            return V1;
         }
-        P += 1;
+        V1 += 1;
     }
     unreachable;
 }
 
 /// currently used as the fastest solution even for large k's
 /// total ripoff from Jean Penne's LLR64 Llr.c
+/// FIXME: use gwnum here? would be totally free of GMP
 pub fn do_fastest_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
-    // FIXME: count really the last bit location
     var k_tmp: gmp.mpz_t = undefined;
     gmp.mpz_init(&k_tmp);
     gmp.mpz_set_ui(&k_tmp, k);
@@ -58,7 +58,6 @@ pub fn do_fastest_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_
     var one: gmp.mpz_t = undefined;
 
     //  init gmps
-
     gmp.mpz_init(&x);
     gmp.mpz_init(&y);
     gmp.mpz_init(&one);
@@ -121,7 +120,8 @@ pub fn do_fastest_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_
     return x;
 }
 
-/// body method for do_fat_lucas_sequence
+/// body method for do_fast_lucas_sequence
+/// !!! slow - not used currently
 fn fast(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
     // required precision 102765*2^333354[100355 digits] == 1KB*227 (0.44)
     // required precision     81*2^240743[72473 digits] == 130 (0.62)
@@ -129,8 +129,6 @@ fn fast(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
     // required precision 39547695*2^454240[136748 digits] == 1MB*86 (0.43) [fft 48K]
     // required precision 133603707*2^100014[136748 digits] == 350?-425+MB
     const start = std.time.milliTimestamp();
-
-    log("m: {} x: {}\n", .{ _m, _x });
 
     var one: gmp.mpf_t = undefined;
     gmp.mpf_init(&one);
@@ -141,7 +139,11 @@ fn fast(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
     var inner: gmp.mpf_t = undefined;
     var buf: gmp.mpf_t = undefined;
 
-    const super_precision: u32 = 1024 * 1024;
+    // we do not automatigally calculate the required precision, but it seems
+    // to be a function of at least 2 numbers. 1 is k, the other is? [haven't got to it yet]
+    // this number will be unusably large for k's in the millions
+    const super_precision: u32 = 1024;
+
     // initialize structs
     gmp.mpf_init2(&x, super_precision);
     gmp.mpf_init(&a);
@@ -154,21 +156,9 @@ fn fast(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
     // do the inner calculation first
     // srt((x^2)-4) == sqrt((x+2)(x-2))
     // alt: x - (sqrt(4) / x)  # seems to work on larger numbers, also fails a lot
-    if (true) {
-        //gmp.mpf_set_ui(&buf, _x + 2);
-        //gmp.mpf_set_ui(&inner, _x - 2);
-        //gmp.mpf_mul(&inner, &buf, &inner);
-        gmp.mpf_pow_ui(&inner, &x, 2);
-        gmp.mpf_sub_ui(&inner, &inner, 4);
-        gmp.mpf_sqrt(&inner, &inner);
-    } else {
-        // alternative inner
-        gmp.mpf_set(&inner, &x);
-        gmp.mpf_set_ui(&buf, 4);
-        gmp.mpf_sqrt(&buf, &buf);
-        gmp.mpf_div(&buf, &buf, &x);
-        gmp.mpf_sub(&inner, &x, &buf);
-    }
+    gmp.mpf_pow_ui(&inner, &x, 2);
+    gmp.mpf_sub_ui(&inner, &inner, 4);
+    gmp.mpf_sqrt(&inner, &inner);
 
     // do deep negative exponentiation
     // 2^-m
@@ -201,6 +191,7 @@ fn fast(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
 /// currently unused as it requires too much floating precision with large k's
 /// and thus get's unbearably slow with k's in the millions
 /// caller owns the result
+/// !!! slow - not used currently
 pub fn do_fast_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
     // P_generic(b * k // mpz2, P_generic(b // mpz2, mpz(4), debug), debug)
     var P: gmp.mpz_t = undefined;
@@ -218,6 +209,7 @@ pub fn do_fast_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
 }
 
 /// caller owns the result
+/// !!! slow - not used currently
 pub fn do_iterative_lucas_sequence(k: u32, P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
     // Vk(P,1) mod N ==
     //  xn = P * Xn-1 - Q * xn-2
@@ -267,17 +259,17 @@ pub fn do_iterative_lucas_sequence(k: u32, P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz
     return buf;
 }
 
-pub fn find_rodseth_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) void {
-    var P: u32 = undefined;
+pub fn find_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) void {
+    var V1: u32 = undefined;
     if (k % 3 != 0) {
-        log("SHORTCUT: using P=4 because [k % 3 != 0]\n", .{});
-        P = 4;
+        log("SHORTCUT: using V1=4 because [k % 3 != 0]\n", .{});
+        V1 = 4;
     } else {
-        // do the Jacobi to find P
+        // do the Jacobi to find V1
         const start_jacobi = std.time.milliTimestamp();
-        P = find_P(N);
+        V1 = find_V1(N);
         const jacobi_took = std.time.milliTimestamp() - start_jacobi;
-        log("found P/V1: {} using Jacobi Symbols in {}ms\n", .{ P, jacobi_took });
+        log("found V1: {} using Jacobi Symbols in {}ms\n", .{ V1, jacobi_took });
     }
 
     const start_lucas = std.time.milliTimestamp();
@@ -285,16 +277,16 @@ pub fn find_rodseth_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) voi
     // version 1 - slow
     // calculate and store lucas sequence - slow
     // does all the sequence steps in a loop
-    //u_zero_out.* = do_iterative_lucas_sequence(k, P, 1, N);
+    //u_zero_out.* = do_iterative_lucas_sequence(k, V1, 1, N);
 
     // version 2 - slow
     // fast lucas sequence process does deep negative powers of k
     // and requires high precision - limiting with large k's
-    //u_zero_out.* = do_fast_lucas_sequence(k, P, 1, N);
+    //u_zero_out.* = do_fast_lucas_sequence(k, V1, 1, N);
 
-    // version 1 - fast
+    // version 3 - fast
     // is O(log(len(k)))
-    u_zero_out.* = do_fastest_lucas_sequence(k, P, 1, N);
+    u_zero_out.* = do_fastest_lucas_sequence(k, V1, 1, N);
 
     const lucas_took = std.time.milliTimestamp() - start_lucas;
     log("calculated Lucas Sequence in {}ms\n", .{lucas_took});
