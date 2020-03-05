@@ -49,35 +49,35 @@ Pseudocode of the whole thing
 const k, n, b, c;  # they have to have values
 const N = k * b ^ n - 1;
 
-# find V1 (as 'u')
-# this uses Jacobi Symbols 
-while (u := 1) : () : (u += 1) {
-    if jacobi(u - 2, N) == 1 && jacobi(u + 2, N) == -1 {
+# find V1
+# this uses Jacobi Symbols
+while (v1 := 1) : () : (v1 += 1) {
+    if jacobi(v1 - 2, N) == 1 && jacobi(v1 + 2, N) == -1 {
         break
     }
 }
 
-# fastest method [ O(log(bitlen(k))) ] to find u0 (as u)
+# fastest method [ O(log(bitlen(k))) ] to find u0
 # this calculates the value of the Lucas Sequence
-x = u
-y = (u * u) - 2
+x = v1
+y = (v1 * v1) - 2
 k_bitlen = bitlen(k)
 while (i := k_bitlen - 2) : (i > 0) : (i -= 1) {
     if k.bits[i] == 1 {
         x = (x*y) - v1 mod N
-        y = (y * y) - 2 mod N
+        y = (y*y) - 2 mod N
     } else {
         y = (x*y) - v1 mod N
-        x = (x * x) - 2 mod N
+        x = (x*x) - 2 mod N
     }
 }
 x = x * x
-x = x - u
-x = x mod N
+x = x - v1
+u = u0 = x mod N
 
-# Lucas-Lehmer-Riesel primality test starting from U0 (as u)
+# Lucas-Lehmer-Riesel primality test starting from U0
 while (i := 1) : (i < n - 1) : (i += 1) {
-    (u * u) - 2
+    u = (u * u) - 2
 }
 'prime!' if u == 0
 ```
