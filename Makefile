@@ -1,6 +1,8 @@
 .PHONY = zig v 
 .SILENT:
 
+all: rpt
+
 rpt:
 	zig build-exe --release-fast --single-threaded --strip -mcpu native rpt.zig \
 		-lc -lm \

@@ -113,7 +113,7 @@ pub fn do_fastest_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_
         }
         i -= 1;
     }
-    // finish up
+    // finish up: x *= y; x -= P; x %= N
     gmp.mpz_mul(&x, &x, &y);
     gmp.mpz_sub_ui(&x, &x, _P);
     gmp.mpz_powm(&x, &x, &one, &N);

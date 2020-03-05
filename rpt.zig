@@ -30,11 +30,11 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     // gwnum magic for speed and (un)safety
     //ctx.safety_margin = -1.0;  // eg. if set to -1 then fails for 1*2^23209-1
     ctx.use_large_pages = 1;
-    gw.gwset_square_carefully_count(&ctx, 30);
+    gw.gwset_square_carefully_count(&ctx, 50);
     ctx.num_threads = threads;
     ctx.will_hyperthread = threads;
 
-    // tell gwnum in what modulus are we calculating in
+    // set gwnum modulus to N
     const _na = gw.gwsetup(&ctx, k, b, n, c_);
 
     // calculate u0
@@ -45,11 +45,10 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     const u0_took = std.time.milliTimestamp() - u0_start;
 
     // print the u0 if it's small enough
-    const u_zero_digits = gmp.mpz_sizeinbase(&u0_gmp, 10);
-    if (u_zero_digits <= 9) {
+    if (n_digits <= 8) {
         log("u0: {}\n", .{gmp.mpz_get_ui(&u0_gmp)});
     }
-    log("step 1. done - u0 digits {} and took {}ms\n", .{ u_zero_digits, u0_took });
+    log("step 1. u0 calc done - took {}ms\n", .{u0_took});
 
     // move u0 from gmp to gw
     var u: gw.gwnum = gw.gwalloc(&ctx);
@@ -70,8 +69,6 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     const llr_took = std.time.milliTimestamp() - llr_start;
     log("step 2. done - llr took {}ms\n", .{llr_took});
 
-    gmp.mpz_clear(&N);
-
     const residue_zero = gw.gwiszero(&ctx, u) == 1;
     if (residue_zero) {
         try stdout.print("#> {}*{}^{}{} [{} digits] IS PRIME\n", .{ k_, b, n, c_, n_digits });
@@ -83,9 +80,12 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
 
 pub fn main() !void {
     try stdout.print("=== RPT - Riesel Prime Tester v{} [GWNUM: {} GMP: {}.{}.{}] ===\n", .{ VERSION, gw.GWNUM_VERSION, gmp.__GNU_MP_VERSION, gmp.__GNU_MP_VERSION_MINOR, gmp.__GNU_MP_VERSION_PATCHLEVEL });
+
+    // the only malloc I make is for cmd args
     const args = try std.process.argsAlloc(std.heap.page_allocator);
     defer std.process.argsFree(std.heap.page_allocator, args);
 
+    // use default k,n or take them from cmd args
     var k: u32 = 0;
     var n: u32 = 0;
     var threads: u8 = 1;
@@ -102,14 +102,15 @@ pub fn main() !void {
         n = 506636;
     }
 
+    // only riesel number support
     const b: u32 = 2;
     const c_: i32 = -1;
 
-    const testo: u32 = 1;
-    if (testo == 1) {
-        const success = selftest(1000000);
-    } else {
+    const only_tests: u32 = 0;
+    if (only_tests == 0) {
         const is_prime = full_llr_run(k, b, n, c_, threads);
+    } else {
+        const success = selftest(1000000);
     }
 }
 
