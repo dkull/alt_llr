@@ -45,7 +45,7 @@ pub fn find_V1(N: gmp.mpz_t) u32 {
 }
 
 /// currently used as the fastest solution even for large k's
-/// total ripoff from Jean Penne's LLR64 Llr.c
+/// translated over from Jean Penne's LLR64 Llr.c
 /// FIXME: use gwnum here? would be totally free of GMP
 pub fn do_fastest_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
     var k_tmp: gmp.mpz_t = undefined;
