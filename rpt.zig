@@ -33,6 +33,8 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     gw.gwset_square_carefully_count(&ctx, 50);
     ctx.num_threads = threads;
     ctx.will_hyperthread = threads;
+    ctx.bench_num_cores = threads;
+    ctx.will_error_check = 0;
 
     // set gwnum modulus to N
     const _na = gw.gwsetup(&ctx, k, b, n, c_);
@@ -48,23 +50,32 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     }
 
     // move U0 from gmp to gw
+    // this has to be the first gwalloc to get large pages
     var u: gw.gwnum = gw.gwalloc(&ctx);
     glue.gmp_to_gw(u0_gmp, u, &ctx);
 
-    log("step 2. llr test ...\n", .{});
+    log("step 2. LLR test ...\n", .{});
     const llr_start = std.time.milliTimestamp();
     // core LLR loop
     var i: usize = 1;
+    var next_log_i = i;
     while (i < n - 1) : (i += 1) {
-        if (@mod(i, 50000) == 0) {
-            log("{}%.", .{(i * 100 / @intCast(usize, (n - 1)))});
+        if (i == next_log_i and k >= 10000) {
+            const pct: usize = @intCast(usize, (i * 100 / @intCast(usize, (n - 1))));
+            if (pct % 10 != 0) {
+                log(".", .{});
+            } else {
+                log("{}", .{pct / 10});
+            }
+            // log again on next percent
+            next_log_i = ((n / 100) * (pct + 1)) + (n / 200 * 1);
         }
         gw.gwsetaddin(&ctx, -2);
         gw.gwsquare2(&ctx, u, u);
     }
-    log("\n", .{});
+    log("X\n", .{});
     const llr_took = std.time.milliTimestamp() - llr_start;
-    log("llr took {}ms\n", .{llr_took});
+    log("LLR took {}ms\n", .{llr_took});
 
     const residue_zero = gw.gwiszero(&ctx, u) == 1;
     if (residue_zero) {
