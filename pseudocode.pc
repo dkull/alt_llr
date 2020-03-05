@@ -1,0 +1,32 @@
+const k, n, b, c;  # they have to have values
+const N = k * b ^ n - 1;
+
+# find V1 (as 'u')
+while (u := 1) : () : (u += 1) {
+    if jacobi(u - 2, N) == 1 && jacobi(u + 2, N) == -1 {
+        break
+    }
+}
+
+# fastest method [ O(log(bitlen(k))) ] to find u0 (as u)
+x = u
+y = (u * u) - 2
+k_bitlen = bitlen(k)
+while (i := k_bitlen - 2) : (i > 0) : (i -= 1) {
+    if k.bits[i] == 1 {
+        x = (x*y) - v1 mod N
+        y = (y * y) - 2 mod N
+    } else {
+        y = (x*y) - v1 mod N
+        x = (x * x) - 2 mod N
+    }
+}
+x = x * x
+x = x - u
+x = x mod N
+
+# llr
+while (i := 1) : (i < n - 1) : (i += 1) {
+    (u * u) - 2
+}
+'prime!' if u == 0
