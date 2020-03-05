@@ -1,50 +1,21 @@
-# alt_llr
-WIP experimentation with a Lucas-Lehmer-Riesel primality tester.
+# RPT - Riesel Prime Tester
+Experimental Lucas-Lehmer-Riesel primality tester.
 
-Requirements: gmpy2
-
-Currently works on smallish k's and n's
-
-The implementation uses no tricks, except
-offloading the heavy math to libgmp.
-
-Tested with examples from  http://15k.org
-There does not seem to be an upper limit for working n's, but
-k's are working upto the circa 5 thousand range for some reason. Working on it.
-
-===
-
-Example 1:
-
+run:
 ```
-$ python3 llr.py 301 159
-N digits = 51 precision 2408 bits
-s0: digits  173
-core took 0.23007ms
-op ** took 0.035ms
-op - took 0.024ms
-op % took 0.05ms
-301*2^159-1 = True
-time: 0.38ms
+$ ./rpt <k> <n> [threads]
+$ ./rpt 39547695 506636 4
 ```
 
-Comparatively llr64 takes 13ms
-
-===
-
-Example 2:
 ```
-$ python3 llr.py 301 32307
-N digits = 9729 precision 2408 bits
-10000 / 32307
-20000 / 32307
-30000 / 32307
-core took 5569.11278ms
-op ** took 1304.56ms
-op - took  5.96ms
-op % took 4227.08ms
-301*2^32307-1 = True
-time: 5569.67ms
+$ ./rpt 39547695 506636 4
+=== RPT - Riesel Prime Tester v0.0.1 [GWNUM: 29.8 GMP: 6.2.0] ===
+LLR testing: 39547695*2^506636-1 [152521 digits] on 4 threads
+step 1. find U0 ...
+found V1 [11] using Jacobi Symbols in 0ms
+found U0 using Lucas Sequence in 66ms
+step 2. llr test ...
+9%.19%.29%.39%.49%.59%.69%.78%.88%.98%.
+llr took 73827ms
+#> 39547695*2^506636-1 [152521 digits] IS PRIME
 ```
-
-Comparatively llr64 takes 184ms
