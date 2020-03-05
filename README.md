@@ -26,16 +26,16 @@ This is not an attempt to replace LLR64. LLR64 has a lot of years of work behind
 Building
 --------
 
+Requires the Zig compiler. GWnum(included in Prime95) and GMP need to be directly in the project directory. 
+Both GWnum and GMP dependencies need to be built first in their respective ways. They are not complicated to build. The Zig compiler can be downloaded in binary form from https://ziglang.org/download/
+
+I am considering using only GWnum and dropping GMP. But it seems like a safe bet to keep onto GMP for other Riesel Prime proving/PRP methods.
+
 ```
 Zig: tested with 0.5-master (not a stable version)
 GWnum: 29.8
 GMP: 6.2.0
 ```
-
-Requires the Zig compiler. GWnum(included in Prime95) and GMP need to be directly in the project directory. 
-Both GWnum and GMP dependencies need to be built first in their respective ways. They are not complicated to build. The Zig compiler can be downloaded in binary form from https://ziglang.org/download/
-
-I am considering using only GWnum and dropping GMP. But it seems like a safe bet to keep onto GMP for other Riesel Prime proving/PRP methods.
 
 ```
 wget https://gmplib.org/download/gmp/gmp-6.2.0.tar.lz
