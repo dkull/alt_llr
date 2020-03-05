@@ -38,10 +38,8 @@ Both GWnum and GMP dependencies need to be built first in their respective ways.
 I am considering using only GWnum and dropping GMP. But it seems like a safe bet to keep onto GMP for other Riesel Prime proving/PRP methods.
 
 ```
-# install Zig to $PATH first
-
 wget https://gmplib.org/download/gmp/gmp-6.2.0.tar.lz
-tar xzf gmp-6.2.0.tar.lz
+tar xlf gmp-6.2.0.tar.lz
 cd gmp-6.2.0
 ./configure
 make
@@ -52,6 +50,8 @@ tar xzf v29.8b6.tar.gz
 #edit: ./Prime95-29.8b6/gwnum/gwnum.h
 #add: #include <stddef.h> to beginning of file
 C_INCLUDE_PATH=../../gmp-6.2.0/ make -C Prime95-29.8b6/gwnum/ -f make64
+
+# install Zig to $PATH first
 
 make
 ```
