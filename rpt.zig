@@ -30,7 +30,7 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
 
     // gwnum magic for speed and (un)safety
     //ctx.safety_margin = -1.0; // eg. if set to -1 then fails for 1*2^23209-1
-    //ctx.use_large_pages = 1;
+    ctx.use_large_pages = 1;
     gw.gwset_square_carefully_count(&ctx, 50);
     ctx.num_threads = threads;
     ctx.will_hyperthread = threads;
@@ -69,10 +69,12 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     var i: usize = 1;
     var next_log_i = i;
     while (i < n - 1) : (i += 1) {
-        if (i == next_log_i and k >= 10000) {
+        if (i == next_log_i and n >= 10000) {
             const pct: usize = @intCast(usize, (i * 100 / @intCast(usize, (n - 1))));
             if (pct % 10 != 0) {
-                log(".", .{});
+                if (pct % 2 == 0) {
+                    log(".", .{});
+                }
             } else {
                 log("{}", .{pct / 10});
             }
