@@ -12,7 +12,7 @@ const u_zero = @import("u_zero.zig");
 const test_data = @import("test_data.zig");
 const helper = @import("helper.zig");
 
-const VERSION = "0.0.2";
+const VERSION = "0.0.3";
 const MIN_THREAD_FFT_KB = 128;
 
 pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
@@ -38,7 +38,7 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
         if (threads_ > 0) {
             break :blk threads_;
         }
-        log("step #1.5 benchmark to find best threadcount ...\n", .{});
+        log("step #1.5 benchmark threadcount ...\n", .{});
         break :blk helper.benchmark_threads(u0_gmp, k_, n);
     };
 
