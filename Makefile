@@ -3,7 +3,7 @@
 
 all: rpt
 
-rpt: *.zig
+rpt: *.zig Makefile
 	zig build-exe --release-fast --single-threaded --strip -mcpu native rpt.zig \
 		-lc -lm \
 		-I./Prime95-29.8b6/gwnum/ --library ./Prime95-29.8b6/gwnum/gwnum.a \

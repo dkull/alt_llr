@@ -13,6 +13,7 @@ const test_data = @import("test_data.zig");
 const helper = @import("helper.zig");
 
 const VERSION = "0.0.1";
+const MIN_THREAD_FFT_KB = 128;
 
 pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     // calculate N for Jacobi
@@ -28,8 +29,8 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     gw.gwinit2(&ctx, @sizeOf(gw.gwhandle), gw.GWNUM_VERSION);
 
     // gwnum magic for speed and (un)safety
-    //ctx.safety_margin = -1.0;  // eg. if set to -1 then fails for 1*2^23209-1
-    ctx.use_large_pages = 1;
+    //ctx.safety_margin = -1.0; // eg. if set to -1 then fails for 1*2^23209-1
+    //ctx.use_large_pages = 1;
     gw.gwset_square_carefully_count(&ctx, 50);
     ctx.num_threads = threads;
     ctx.will_hyperthread = threads;
@@ -38,6 +39,14 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
 
     // set gwnum modulus to N
     const _na = gw.gwsetup(&ctx, k, b, n, c_);
+
+    // print and check fft size
+    const fft_size = gw.gwfftlen(&ctx) / 1024;
+    try stdout.print("FFT size {}KB", .{fft_size});
+    if (threads > 1 and fft_size / threads < MIN_THREAD_FFT_KB) {
+        try stdout.print(" [WARNING: Too many threads for this FFT size]\n", .{});
+    }
+    try stdout.print("\n", .{});
 
     // calculate U0
     log("step 1. find U0 ...\n", .{});

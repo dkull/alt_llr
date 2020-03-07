@@ -5,7 +5,7 @@ import time
 #flag -lm
 #flag -I.
 #flag -L.
-#flag -I./Prime95/gwnum/
+#flag -I../Prime95-29.8b6/gwnum/
 #flag -lgwnum
 #include <gwnum.h>
 
@@ -140,12 +140,12 @@ fn main() {
     //k := 971081
     //k := 181
     //k := 7657
-    k := 5
+    k := 1
     b := 2
     //n := 223282
     //n := 334579
     //n := 468933
-    n := 12
+    n := 859433
     c := -1
     println("LLR test on $k*$b^$n$c")
 
@@ -157,11 +157,11 @@ fn main() {
     //test(&ctx)
 
     //mut s := calc_s0(&ctx, k, b)
-    mut s := load_s0_from_file(&ctx, k)
+    //mut s := load_s0_from_file(&ctx, k)
 
     // mersenne s0
-    //mut s := C.gwalloc(&ctx)
-    //C.dbltogw(&ctx, f64(4), s)
+    mut s := C.gwalloc(&ctx)
+    C.dbltogw(&ctx, f64(4), s)
 
     mut i := 1
     begin := time.ticks()
