@@ -5,7 +5,7 @@ Note
 ----
 This project is in no way 'production ready', it does not check errors and does not save state. I wouldn't recommend swapping out your LLR64's for this (yet). Although I have noticed that if a CPU is stable with LLR (for a while), it should be okay to run it without error checking...am I right about this?
 
-Also, it is important to note that this software and Jean Penné's software (LLR64 http://jpenne.free.fr/index2.html) do (almost) exactly the same thing, using the same libraries. So there is no performance gains to be had - we both rely on the speed of the GWNum library. LLR64 is probably faster in many cases (possibly due to using C/GCC or some other magic), even though it uses error checking. But I have noticed that RPT is a smidge faster when using larger k's in threaded mode.
+Also, it is important to note that this software and Jean Penné's software (LLR64 http://jpenne.free.fr/index2.html) do (almost) exactly the same thing, using the same libraries. So there are no dramatic performance gains to be had - we both rely on the speed of the GWNum library. RPT is up to 1% faster due to not doing checks on the calculations in the core loop.
 
 k and n are currently limited to unsigned 32 bit values (~4.29Bil) for arbitrary reasons. I don't see a need for supporting larger values.
 As Riesel states in his paper (Prime Numbers and Computer Methods for Factorization p126 [2012]) this condition must hold: 2^n > 4k for the test to work.
@@ -64,15 +64,16 @@ $ ./rpt 39547695 506636 4
 ```
 
 ```
-$ ./rpt 39547695 506636 4
-=== RPT - Riesel Prime Tester v0.0.1 [GWNUM: 29.8 GMP: 6.2.0] ===
+./rpt 39547695 506636 4                                                                                                                                                                     130 ↵
+=== RPT - Riesel Prime Tester v0.0.2 [GWNUM: 29.8 GMP: 6.2.0] ===
 LLR testing: 39547695*2^506636-1 [152521 digits] on 4 threads
+FFT size 50KB [WARNING: Probably too many threads for this FFT size]
 step 1. find U0 ...
 found V1 [11] using Jacobi Symbols in 0ms
-found U0 using Lucas Sequence in 66ms
-step 2. llr test ...
-9%.19%.29%.39%.49%.59%.69%.78%.88%.98%.
-llr took 73827ms
+found U0 using Lucas Sequence in 64ms
+step 2. LLR test ...
+0....1....2....3....4....5....6....7....8....9....X
+LLR took 62269ms
 #> 39547695*2^506636-1 [152521 digits] IS PRIME
 ```
 Pseudocode of the whole thing
