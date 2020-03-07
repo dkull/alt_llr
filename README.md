@@ -64,16 +64,16 @@ $ ./rpt 39547695 506636 4
 ```
 
 ```
-./rpt 39547695 506636 4                                                                                                                                                                     130 ↵
+./rpt 39547695 506636 3
 === RPT - Riesel Prime Tester v0.0.2 [GWNUM: 29.8 GMP: 6.2.0] ===
-LLR testing: 39547695*2^506636-1 [152521 digits] on 4 threads
+LLR testing: 39547695*2^506636-1 [152521 digits] on 3 threads
 FFT size 50KB [WARNING: Probably too many threads for this FFT size]
 step 1. find U0 ...
 found V1 [11] using Jacobi Symbols in 0ms
 found U0 using Lucas Sequence in 64ms
 step 2. LLR test ...
 0....1....2....3....4....5....6....7....8....9....X
-LLR took 62269ms
+LLR took 58755ms
 #> 39547695*2^506636-1 [152521 digits] IS PRIME
 ```
 Pseudocode of the whole thing
