@@ -15,38 +15,13 @@ const helper = @import("helper.zig");
 const VERSION = "0.0.2";
 const MIN_THREAD_FFT_KB = 128;
 
-pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
+pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     // calculate N for Jacobi
     var N: gmp.mpz_t = u_zero.calculate_N(k_, n);
     const n_digits = gmp.mpz_sizeinbase(&N, 10);
-
-    try stdout.print("LLR testing: {}*{}^{}{} [{} digits] on {} threads\n", .{ k_, b, n, c_, n_digits, threads });
-
     const k = @intToFloat(f64, k_);
 
-    // create gwnum context
-    var ctx: gw.gwhandle = undefined;
-    gw.gwinit2(&ctx, @sizeOf(gw.gwhandle), gw.GWNUM_VERSION);
-
-    // gwnum magic for speed and (un)safety
-    //ctx.safety_margin = -1.0; // eg. if set to -1 then fails for 1*2^23209-1
-    ctx.use_large_pages = 1;
-    gw.gwset_square_carefully_count(&ctx, 50);
-    ctx.num_threads = threads;
-    ctx.will_hyperthread = threads;
-    ctx.bench_num_cores = threads;
-    ctx.will_error_check = 0;
-
-    // set gwnum modulus to N
-    const _na = gw.gwsetup(&ctx, k, b, n, c_);
-
-    // print and check fft size
-    const fft_size = gw.gwfftlen(&ctx) / 1024;
-    try stdout.print("FFT size {}KB", .{fft_size});
-    if (threads > 1 and fft_size / threads < MIN_THREAD_FFT_KB) {
-        try stdout.print(" [WARNING: Possibly too many threads for this FFT size]", .{});
-    }
-    try stdout.print("\n", .{});
+    try stdout.print("LLR testing: {}*{}^{}{} [{} digits] on {} threads\n", .{ k_, b, n, c_, n_digits, threads_ });
 
     // calculate U0
     log("step 1. find U0 ...\n", .{});
@@ -57,6 +32,28 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     if (n_digits <= 8) {
         log("U0: {}\n", .{gmp.mpz_get_ui(&u0_gmp)});
     }
+
+    // use given threadcount or determine the fastest one using benchmarking
+    const threads: u8 = blk: {
+        if (threads_ > 0) {
+            break :blk threads_;
+        }
+        break :blk helper.benchmark_threads(u0_gmp, k_, n);
+    };
+
+    // create gwnum context
+    var ctx: gw.gwhandle = undefined;
+    helper.create_gwhandle(&ctx, threads, k_, n);
+
+    // print and check fft size
+    const fft_size = gw.gwfftlen(&ctx) / 1024;
+    try stdout.print("FFT size {}KB", .{fft_size});
+    if (threads > 1) {
+        if (fft_size / threads < MIN_THREAD_FFT_KB) {
+            try stdout.print(" [WARNING: Possibly too many threads for this FFT size]", .{});
+        }
+    }
+    try stdout.print("\n", .{});
 
     // move U0 from gmp to gw
     // this has to be the first gwalloc to get large pages
