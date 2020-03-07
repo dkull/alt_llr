@@ -12,7 +12,7 @@ const u_zero = @import("u_zero.zig");
 const test_data = @import("test_data.zig");
 const helper = @import("helper.zig");
 
-const VERSION = "0.0.1";
+const VERSION = "0.0.2";
 const MIN_THREAD_FFT_KB = 128;
 
 pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
@@ -44,7 +44,7 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     const fft_size = gw.gwfftlen(&ctx) / 1024;
     try stdout.print("FFT size {}KB", .{fft_size});
     if (threads > 1 and fft_size / threads < MIN_THREAD_FFT_KB) {
-        try stdout.print(" [WARNING: Too many threads for this FFT size]\n", .{});
+        try stdout.print(" [WARNING: Possibly too many threads for this FFT size]", .{});
     }
     try stdout.print("\n", .{});
 
@@ -68,6 +68,8 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
     // core LLR loop
     var i: usize = 1;
     var next_log_i = i;
+    // this subtracts 2 after every squaring
+    gw.gwsetaddin(&ctx, -2);
     while (i < n - 1) : (i += 1) {
         if (i == next_log_i and n >= 10000) {
             const pct: usize = @intCast(usize, (i * 100 / @intCast(usize, (n - 1))));
@@ -81,8 +83,9 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads: u8) !bool {
             // log again on next percent
             next_log_i = ((n / 100) * (pct + 1)) + (n / 200 * 1);
         }
-        gw.gwsetaddin(&ctx, -2);
         gw.gwsquare2(&ctx, u, u);
+        // provides a speed boost
+        gw.gwstartnextfft(&ctx, 1);
     }
     log("X\n", .{});
     const llr_took = std.time.milliTimestamp() - llr_start;
