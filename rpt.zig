@@ -24,7 +24,7 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     try stdout.print("LLR testing: {}*{}^{}{} [{} digits] on {} threads\n", .{ k_, b, n, c_, n_digits, threads_ });
 
     // calculate U0
-    log("step 1. find U0 ...\n", .{});
+    log("step #1 find U0 ...\n", .{});
     var u0_gmp: gmp.mpz_t = undefined;
     u_zero.find_u0(k_, n, N, &u0_gmp);
 
@@ -38,6 +38,7 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
         if (threads_ > 0) {
             break :blk threads_;
         }
+        log("step #1.5 benchmark to find best threadcount ...\n", .{});
         break :blk helper.benchmark_threads(u0_gmp, k_, n);
     };
 
@@ -48,11 +49,11 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     // print and check fft size
     const fft_size = gw.gwfftlen(&ctx) / 1024;
     try stdout.print("FFT size {}KB", .{fft_size});
-    if (threads > 1) {
-        if (fft_size / threads < MIN_THREAD_FFT_KB) {
-            try stdout.print(" [WARNING: Possibly too many threads for this FFT size]", .{});
-        }
-    }
+    //if (threads > 1) {
+    //    if (fft_size / threads < MIN_THREAD_FFT_KB) {
+    //        try stdout.print(" [WARNING: Possibly too many threads for this FFT size]", .{});
+    //    }
+    //}
     try stdout.print("\n", .{});
 
     // move U0 from gmp to gw
@@ -60,7 +61,7 @@ pub fn full_llr_run(k_: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     var u: gw.gwnum = gw.gwalloc(&ctx);
     glue.gmp_to_gw(u0_gmp, u, &ctx);
 
-    log("step 2. LLR test ...\n", .{});
+    log("step #2 LLR test ...\n", .{});
     const llr_start = std.time.milliTimestamp();
     // core LLR loop
     var i: usize = 1;
