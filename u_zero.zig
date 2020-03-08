@@ -296,5 +296,5 @@ pub fn find_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) void {
     log("found U0 using Lucas Sequence in {}ms\n", .{lucas_took});
 
     // do the mod just in case it's not done
-    gmp.mpz_mod(u_zero_out, u_zero_out, &N);
+    //gmp.mpz_mod(u_zero_out, u_zero_out, &N);
 }
