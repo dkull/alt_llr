@@ -22,7 +22,7 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     // calculate U0
     try stdout.print("step #1 find U0 ...\n", .{});
     var u0_gmp: gmp.mpz_t = undefined;
-    u_zero.find_u0(k, n, N, &u0_gmp);
+    try u_zero.find_u0(k, n, N, &u0_gmp);
 
     // print the u0 if it's small enough
     if (n_digits <= 8) {

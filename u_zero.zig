@@ -1,5 +1,6 @@
 const std = @import("std");
 const log = std.debug.warn;
+const stdout = &std.io.getStdOut().outStream().stream;
 
 const c = @import("c.zig");
 const gmp = c.gmp;
@@ -263,17 +264,17 @@ pub fn do_iterative_lucas_sequence(k: u32, P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz
     return buf;
 }
 
-pub fn find_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) void {
+pub fn find_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) !void {
     var V1: u32 = undefined;
     if (k % 3 != 0) {
-        log("SHORTCUT: using V1=4 because [k % 3 != 0]\n", .{});
+        try stdout.print("SHORTCUT: using V1=4 because [k % 3 != 0]\n", .{});
         V1 = 4;
     } else {
         // do the Jacobi to find V1
         const start_jacobi = std.time.milliTimestamp();
         V1 = find_V1(N);
         const jacobi_took = std.time.milliTimestamp() - start_jacobi;
-        log("found V1 [{}] using Jacobi Symbols in {}ms\n", .{ V1, jacobi_took });
+        try stdout.print("found V1 [{}] using Jacobi Symbols in {}ms\n", .{ V1, jacobi_took });
     }
 
     const start_lucas = std.time.milliTimestamp();
@@ -293,7 +294,7 @@ pub fn find_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) void {
     u_zero_out.* = do_fastest_lucas_sequence(k, V1, 1, N);
 
     const lucas_took = std.time.milliTimestamp() - start_lucas;
-    log("found U0 using Lucas Sequence in {}ms\n", .{lucas_took});
+    try stdout.print("found U0 using Lucas Sequence in {}ms\n", .{lucas_took});
 
     // do the mod just in case it's not done
     //gmp.mpz_mod(u_zero_out, u_zero_out, &N);

@@ -36,7 +36,7 @@ pub fn main() !void {
 
     const only_tests: u32 = 0;
     if (only_tests == 0) {
-        const is_prime = llr.full_llr_run(k, b, n, c_, threads);
+        const is_prime = try llr.full_llr_run(k, b, n, c_, threads);
     } else {
         const success = selftest.run(1000000);
     }
