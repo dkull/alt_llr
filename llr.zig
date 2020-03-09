@@ -44,7 +44,7 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
 
     // print and check fft size
     const fft_size = gw.gwfftlen(&ctx) / 1024;
-    try stdout.print("FFT size {}KB", .{fft_size});
+    try stdout.print("FFT size {}KB\n", .{fft_size});
     //if (threads > 1) {
     //    if (fft_size / threads < MIN_THREAD_FFT_KB) {
     //        try stdout.print(" [WARNING: Possibly too many threads for this FFT size]", .{});
