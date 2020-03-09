@@ -1,6 +1,3 @@
-///
-/// copied from https://ziglang.org/documentation/master/#toc-Error-Union-Type
-///
 const std = @import("std");
 const maxInt = std.math.maxInt;
 const log = std.debug.warn;
@@ -62,6 +59,9 @@ pub fn benchmark_threads(u0_gmp: gmp.mpz_t, k: u32, n: u32) u8 {
     return best_threadcount;
 }
 
+///
+/// copied from https://ziglang.org/documentation/master/#toc-Error-Union-Type
+///
 pub fn parseU64(buf: []const u8, radix: u8) !u64 {
     var x: u64 = 0;
     for (buf) |ch| {

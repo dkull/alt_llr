@@ -49,6 +49,7 @@ tar xzf v29.8b6.tar.gz
 #edit: ./Prime95-29.8b6/gwnum/gwnum.h
 #add: #include <stddef.h> to beginning of file
 C_INCLUDE_PATH=../../gmp-6.2.0/ make -C Prime95-29.8b6/gwnum/ -f make64
+cp Prime95-29.8b6/gwnum/{gwnum.a,libgwnum.a}
 
 # install Zig to $PATH first
 

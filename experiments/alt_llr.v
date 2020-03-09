@@ -5,7 +5,8 @@ import time
 #flag -lm
 #flag -I.
 #flag -L.
-#flag -I../Prime95-29.8b6/gwnum/
+#flag -L./Prime95-29.8b6/gwnum/
+#flag -I./Prime95-29.8b6/gwnum/
 #flag -lgwnum
 #include <gwnum.h>
 

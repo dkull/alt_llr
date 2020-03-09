@@ -21,5 +21,6 @@ rpt_release: *.zig
 
 v:
 	#v -cg -prod -cc gcc-9 -cflags -fauto-profile=altllr.gcov altllr.v
-	v -cg -prod -cc gcc-9 -o alt_llr_v experiments/alt_llr.v
+	cp Prime95-29.8b6/gwnum/gwnum.a Prime95-29.8b6/gwnum/libgwnum.a
+	v -cg -prod -cc gcc-9 -- experiments/alt_llr.v
 	#v -cg -prod -cc gcc-9 -cflags -fdata-sections -ffunction-sections -Wl,--gc-sections -fwhole-program -O3 -funroll-loops -march=native altllr.v
