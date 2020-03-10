@@ -1,5 +1,5 @@
 const std = @import("std");
-const log = std.debug.warn;
+const stderr = std.debug.warn;
 const stdout = &std.io.getStdOut().outStream().stream;
 const assert = @import("std").debug.assert;
 
@@ -14,7 +14,7 @@ const llr = @import("llr.zig");
 const selftest = @import("selftest.zig");
 const argparser = @import("argparser.zig");
 
-const VERSION = "0.0.3";
+const VERSION = "0.0.4";
 const MIN_THREAD_FFT_KB = 128;
 
 pub fn main() !void {
@@ -26,18 +26,24 @@ pub fn main() !void {
 
     // parse the few args we take
     const parsed_args: argparser.ParsedArgs = try argparser.ParsedArgs.parse(args);
-    const k = parsed_args.k;
-    const n = parsed_args.n;
-    const threads = parsed_args.threads;
+    const mode = parsed_args.mode;
 
-    // only riesel number support
-    const b: u32 = 2;
-    const c_: i32 = -1;
-
-    const only_tests: u32 = 0;
-    if (only_tests == 0) {
-        const is_prime = try llr.full_llr_run(k, b, n, c_, threads);
-    } else {
-        const success = selftest.run(1000000);
+    switch (mode) {
+        argparser.RunMode.LLR => {
+            const threads = parsed_args.threads;
+            const k = parsed_args.k;
+            const n = parsed_args.n;
+            const b: u32 = 2;
+            const c_: i32 = -1;
+            const is_prime = try llr.full_llr_run(k, b, n, c_, threads);
+        },
+        argparser.RunMode.Selftest => {
+            stderr("selftest\n", .{});
+            const success = selftest.run(1000000);
+        },
+        argparser.RunMode.Help => {
+            try stdout.print("./rpt --llr <k> <n> [--threads <t>]\n", .{});
+            try stdout.print("./rpt --selftest [--threads <t>]\n", .{});
+        },
     }
 }
