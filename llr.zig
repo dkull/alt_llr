@@ -82,9 +82,17 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
         // provides a speed boost
         gw.gwstartnextfft(&ctx, 1);
     }
-    try stdout.print("X\n", .{});
+    // math logging condition
+    if (n >= 10000) {
+        try stdout.print("X\n", .{});
+    }
     const llr_took = std.time.milliTimestamp() - llr_start;
     try stdout.print("LLR took {}ms\n", .{llr_took});
+
+    const limit_hit: c_int = gw.gwnear_fft_limit(&ctx, 0.1);
+    if (limit_hit == 1) {
+        log("WARNING: hit fft limit, result probably wrong\n", .{});
+    }
 
     const residue_zero = gw.gwiszero(&ctx, u) == 1;
     if (residue_zero) {
