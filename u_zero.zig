@@ -29,7 +29,7 @@ pub fn find_V1(N: gmp.mpz_t) u32 {
     gmp.mpz_init(&minus);
     gmp.mpz_init(&plus);
 
-    var V1: u32 = 1;
+    var V1: u32 = 2;
     while (V1 < 1000) {
         gmp.mpz_set_ui(&minus, V1 - 2);
         gmp.mpz_set_ui(&plus, V1 + 2);
@@ -74,11 +74,14 @@ pub fn do_fastest_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_
     gmp.mpz_sub_ui(&y, &y, 2);
     gmp.mpz_powm(&y, &y, &one, &N);
 
-    var i: u32 = @intCast(u32, @intCast(i32, k_bitlen) - 2);
-    if (k <= 2) {
-        // FIXME: understand why the value of i does not matter
-        i = 0;
-    }
+    // if bitlen is less than 2 then we have an edge case
+    var i: u32 = blk: {
+        if (k_bitlen >= 2) {
+            break :blk @intCast(u32, @intCast(i32, k_bitlen) - 2);
+        }
+        break :blk 0;
+    };
+
     var one2: i32 = 1;
     while (i > 0) {
         // FIXME: dirty hack for 1<<i

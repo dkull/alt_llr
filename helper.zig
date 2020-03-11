@@ -11,7 +11,8 @@ const glue = @import("glue.zig");
 pub fn create_gwhandle(ctx: *gw.gwhandle, threads: u8, k: u32, n: u32) void {
     gw.gwinit2(ctx, @sizeOf(gw.gwhandle), gw.GWNUM_VERSION);
     gw.gwset_square_carefully_count(ctx, 50);
-    ctx.safety_margin = 0.001;
+    ctx.safety_margin = 0.0001;
+    //ctx.safety_margin = -1.0;
     ctx.use_large_pages = 1;
     ctx.num_threads = threads;
     ctx.will_hyperthread = threads;

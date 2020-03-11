@@ -9,6 +9,12 @@ rpt: *.zig Makefile
 		-I./Prime95-29.8b6/gwnum/ --library ./Prime95-29.8b6/gwnum/gwnum.a \
 		-I./gmp-6.2.0 --library ./gmp-6.2.0/.libs/libgmp.a \
 		--name rpt
+debug: *.zig Makefile
+	zig build-exe --single-threaded -mcpu native rpt.zig \
+		-lc -lm \
+		-I./Prime95-29.8b6/gwnum/ --library ./Prime95-29.8b6/gwnum/gwnum.a \
+		-I./gmp-6.2.0 --library ./gmp-6.2.0/.libs/libgmp.a \
+		--name rpt
 
 rpt_release: *.zig
 	zig build-exe --release-small --single-threaded --strip -mcpu x86_64 rpt.zig \

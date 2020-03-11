@@ -31,6 +31,7 @@ pub const ParsedArgs = struct {
             }
             if (arg.len == 10 and mem.eql(u8, arg[0..10], "--selftest"[0..10])) {
                 mode = RunMode.Selftest;
+                n = @intCast(u32, try helper.parseU64(args[i + 1], 10));
             }
             if (arg.len == 9 and mem.eql(u8, arg[0..9], "--threads"[0..9])) {
                 threads = @intCast(u8, try helper.parseU64(args[i + 1], 10));

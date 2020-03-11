@@ -59,12 +59,15 @@ make
 Running
 -------
 ```
+Selftest tests known primes k < 300, their n, and counter cases: n-1 [if not known prime]
+
 Options:
 $ ./rpt --llr <k> <n> [--threads <t>]
-$ ./rpt --selftest [--threads <t>]
+$ ./rpt --selftest <max_n>
 
 Simple example:
 $ ./rpt --llr 39547695 506636 --threads 4
+$ ./rpt --selftest 50000
 
 For optimal threadcount detection:
 $ ./rpt --llr 39547695 506636 --threads 0

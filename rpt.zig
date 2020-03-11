@@ -39,7 +39,8 @@ pub fn main() !void {
         },
         argparser.RunMode.Selftest => {
             stderr("selftest\n", .{});
-            const success = selftest.run(1000000);
+            const n = parsed_args.n;
+            const success = selftest.run(n);
         },
         argparser.RunMode.Help => {
             try stdout.print("./rpt --llr <k> <n> [--threads <t>]\n", .{});
