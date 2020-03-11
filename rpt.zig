@@ -15,7 +15,6 @@ const selftest = @import("selftest.zig");
 const argparser = @import("argparser.zig");
 
 const VERSION = "0.0.4";
-const MIN_THREAD_FFT_KB = 128;
 
 pub fn main() !void {
     try stdout.print("=== RPT - Riesel Prime Tester v{} [GWNUM: {} GMP: {}.{}.{}] ===\n", .{ VERSION, gw.GWNUM_VERSION, gmp.__GNU_MP_VERSION, gmp.__GNU_MP_VERSION_MINOR, gmp.__GNU_MP_VERSION_PATCHLEVEL });
@@ -38,7 +37,6 @@ pub fn main() !void {
             const is_prime = try llr.full_llr_run(k, b, n, c_, threads);
         },
         argparser.RunMode.Selftest => {
-            stderr("selftest\n", .{});
             const n = parsed_args.n;
             const success = selftest.run(n);
         },
