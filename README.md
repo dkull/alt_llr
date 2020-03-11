@@ -85,6 +85,28 @@ step #2 LLR test ...
 0....1....2....3....4....5....6....7....8....9....X
 LLR took 58404ms
 #> 39547695*2^506636-1 [152521 digits] IS PRIME
+
+./rpt --llr 39547695 506636 --threads 0
+=== RPT - Riesel Prime Tester v0.0.4 [GWNUM: 29.8 GMP: 6.2.0] ===
+LLR testing: 39547695*2^506636-1 [152521 digits] on 0 threads
+step #1 find U0 ...
+found V1 [11] using Jacobi Symbols in 0ms
+found U0 using Lucas Sequence in 100ms
+step #1.5 benchmark threadcount ...
+threads 1 took 158ms for 1000 iterations
+threads 2 took 159ms for 1000 iterations
+threads 3 took 133ms for 1000 iterations
+threads 4 took 157ms for 1000 iterations
+threads 5 took 158ms for 1000 iterations
+threads 6 took 165ms for 1000 iterations
+threads 7 took 177ms for 1000 iterations
+threads 8 took 184ms for 1000 iterations
+using fastest threadcount 3
+FFT size 50KB
+step #2 LLR test ...
+0....1....2....3....4....5....6....7....8....9....X
+LLR took 58387ms
+#> 39547695*2^506636-1 [152521 digits] IS PRIME
 ```
 Pseudocode of the whole thing
 -----------------------------
