@@ -2,6 +2,7 @@ const std = @import("std");
 const log = std.debug.warn;
 const stdout = &std.io.getStdOut().outStream().stream;
 const assert = @import("std").debug.assert;
+const fmt = @import("std").fmt;
 
 const c = @import("c.zig");
 const gw = c.gw;
@@ -11,6 +12,15 @@ const glue = @import("glue.zig");
 const u_zero = @import("u_zero.zig");
 const test_data = @import("test_data.zig");
 const helper = @import("helper.zig");
+
+pub fn get_residue(ctx: *gw.gwhandle, u: gw.gwnum, output: *[32]u8) !void {
+    var gdata = ctx.gdata;
+    // FIXME: this 0 needs to be size of giants buffer
+    var g: gw.giant = gw.popg(&gdata, 0);
+    const success = gw.gwtogiant(ctx, u, g);
+    //log("bitlen {}\n", .{gw.bitlen(g)});
+    const succ = try fmt.bufPrint(output, "{X:0>8}{X:0>8}", .{ g.*.n[1], g.*.n[0] });
+}
 
 pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     // calculate N for Jacobi
@@ -98,7 +108,9 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     if (residue_zero) {
         log("#> {}*{}^{}{} [{} digits] IS PRIME\n", .{ k, b, n, c_, n_digits });
     } else {
-        log("#> {}*{}^{}{} [{} digits] is not prime\n", .{ k, b, n, c_, n_digits });
+        var residue: [32]u8 = undefined;
+        try get_residue(&ctx, u, &residue);
+        log("#> {}*{}^{}{} [{} digits] is not prime. LLR Res64: {}\n", .{ k, b, n, c_, n_digits, residue });
     }
     return residue_zero;
 }
