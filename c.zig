@@ -4,3 +4,7 @@ pub const gw = @cImport({
 pub const gmp = @cImport({
     @cInclude("gmp.h");
 });
+pub const c_stdlib = @cImport({
+    @cInclude("sys/resource.h");
+    @cInclude("unistd.h");
+});

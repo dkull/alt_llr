@@ -4,6 +4,7 @@ const stdout = &std.io.getStdOut().outStream().stream;
 const assert = @import("std").debug.assert;
 
 const c = @import("c.zig");
+const c_stdlib = c.c_stdlib;
 const gw = c.gw;
 const gmp = c.gmp;
 
@@ -17,6 +18,9 @@ const argparser = @import("argparser.zig");
 const VERSION = "0.0.4";
 
 pub fn main() !void {
+    // let's be really nice
+    const err = c_stdlib.setpriority(c_stdlib.PRIO_PROCESS, 0, 19);
+
     try stdout.print("=== RPT - Riesel Prime Tester v{} [GWNUM: {} GMP: {}.{}.{}] ===\n", .{ VERSION, gw.GWNUM_VERSION, gmp.__GNU_MP_VERSION, gmp.__GNU_MP_VERSION_MINOR, gmp.__GNU_MP_VERSION_PATCHLEVEL });
 
     // the only malloc I make is for cmd args
