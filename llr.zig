@@ -74,8 +74,7 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     // core LLR loop
     var i: usize = 1;
     var next_log_i = i;
-    var error_logged = false;
-    var errored_just = false;
+    var errored = false;
     var near_fft = false;
     const i_penultimate: u32 = n - 1;
     // this subtracts 2 after every squaring
@@ -95,7 +94,7 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
         }
 
         // gwstartnextfft may ruin the results if run under
-        // incorrect conditions, -31 and -30 seem to work (copied from LLR64)
+        // incorrect conditions. -31 and -30 seem to work (copied from LLR64)
         if (i >= 30 and i < @intCast(i32, i_penultimate - 31)) {
             gw.gwstartnextfft(&ctx, 1);
         } else {
@@ -119,15 +118,15 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
         // error_check
         if (near_fft) {
             if (gw.gw_test_illegal_sumout(&ctx) != 0) {
-                errored_just = true;
+                errored = true;
                 log("ERROR: illegal sumout @ {}\n", .{i});
             }
             if (gw.gw_test_mismatched_sums(&ctx) != 0) {
-                errored_just = true;
+                errored = true;
                 log("ERROR: mismatched sums @ {}\n", .{i});
             }
             if (gw.gw_get_maxerr(&ctx) >= 0.40) {
-                errored_just = true;
+                errored = true;
                 log("ERROR: maxerr > 0.4 @ {} = {}\n", .{ i, gw.gw_get_maxerr(&ctx) });
             }
         }
@@ -136,16 +135,18 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     if (n >= 10000) {
         try stdout.print("X\n", .{});
     }
+
     const llr_took = std.time.milliTimestamp() - llr_start;
     try stdout.print("LLR took {}ms\n", .{llr_took});
 
+    const maybe = if (errored) "maybe " else "";
     const residue_zero = gw.gwiszero(&ctx, u) == 1;
     if (residue_zero) {
-        log("#> {}*{}^{}{} [{} digits] IS PRIME\n", .{ k, b, n, c_, n_digits });
+        log("#> {}*{}^{}{} [{} digits] IS {}PRIME\n", .{ k, b, n, c_, n_digits, maybe });
     } else {
         var residue: [32]u8 = undefined;
         try get_residue(&ctx, u, &residue);
-        log("#> {}*{}^{}{} [{} digits] is not prime. LLR Res64: {}\n", .{ k, b, n, c_, n_digits, residue });
+        log("#> {}*{}^{}{} [{} digits] is {}not prime. LLR Res64: {}\n", .{ k, b, n, c_, n_digits, maybe, residue });
     }
     return residue_zero;
 }
