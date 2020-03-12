@@ -22,8 +22,8 @@ pub fn create_gwhandle(ctx: *gw.gwhandle, threads: u8, k: u32, n: u32) void {
     //ctx.safety_margin = 0.3;
     gw.gwset_square_carefully_count(ctx, 50);
     //ctx.use_irrational_general_mod = 1;
-    //ctx.sum_inputs_checking = 1;
-    //ctx.will_error_check = 1;
+    ctx.sum_inputs_checking = 1;
+    ctx.will_error_check = 1;
 
     const _na = gw.gwsetup(ctx, @intToFloat(f64, k), 2, n, -1);
 }

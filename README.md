@@ -5,7 +5,7 @@ Note
 ----
 This project is in no way 'production ready', it does not check errors and does not save state. I wouldn't recommend swapping out your LLR64's for this (yet). Although I have noticed that if a CPU is stable with LLR (for a while), it should be okay to run it without error checking...am I right about this?
 
-Also, it is important to note that this software and Jean Penné's software (LLR64 http://jpenne.free.fr/index2.html) do (almost) exactly the same thing, using the same libraries. So there are no dramatic performance gains to be had - we both rely on the speed of the GWNum library. RPT is up to 1% faster due to not doing checks on the calculations in the core loop.
+Also, it is important to note that this software and Jean Penné's software (LLR64 http://jpenne.free.fr/index2.html) do (almost) exactly the same thing, using the same libraries. So there are no dramatic performance gains to be had - we both rely on the speed of the GWNum library. RPT should is exactly as fast as LLR64.
 
 k and n are currently limited to unsigned 32 bit values (~4.29Bil) for arbitrary reasons. I don't see a need for supporting larger values.
 As Riesel states in his paper (Prime Numbers and Computer Methods for Factorization p126 [2012]) this condition must hold for the test to work: 2^n > 4k. This software does currently not notify you if this condition does not hold.
