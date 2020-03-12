@@ -70,12 +70,17 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
 
     try stdout.print("step #2 LLR test ...\n", .{});
     const llr_start = std.time.milliTimestamp();
+
     // core LLR loop
     var i: usize = 1;
     var next_log_i = i;
+    var error_logged = false;
+    var errored_just = false;
+    var near_fft = false;
+    const i_penultimate: u32 = n - 1;
     // this subtracts 2 after every squaring
     gw.gwsetaddin(&ctx, -2);
-    while (i < n - 1) : (i += 1) {
+    while (i < i_penultimate) : (i += 1) {
         if (i == next_log_i and n >= 10000) {
             const pct: usize = @intCast(usize, (i * 100 / @intCast(usize, (n - 1))));
             if (pct % 10 != 0) {
@@ -88,9 +93,44 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
             // log again on next percent
             next_log_i = ((n / 100) * (pct + 1)) + (n / 200 * 1);
         }
-        gw.gwsquare2(&ctx, u, u);
-        // provides a speed boost
-        gw.gwstartnextfft(&ctx, 1);
+
+        // gwstartnextfft may ruin the results if run under
+        // incorrect conditions, -31 and -30 seem to work (copied from LLR64)
+        if (i >= 30 and i < @intCast(i32, i_penultimate - 31)) {
+            gw.gwstartnextfft(&ctx, 1);
+        } else {
+            gw.gwstartnextfft(&ctx, 0);
+        }
+        if (i >= 30 and i < @intCast(i32, i_penultimate - 30)) {
+            gw.gwsquare2(&ctx, u, u);
+        } else {
+            gw.gwsquare2_carefully(&ctx, u, u);
+        }
+
+        // check if near fft limit
+        if (gw.gwnear_fft_limit(&ctx, 0.5) != 0) {
+            ctx.NORMNUM = 1;
+            if (!near_fft) {
+                log("WARNING: near FFT limit @ {}\n", .{i});
+                near_fft = true;
+            }
+        }
+
+        // error_check
+        if (near_fft) {
+            if (gw.gw_test_illegal_sumout(&ctx) != 0) {
+                errored_just = true;
+                log("ERROR: illegal sumout @ {}\n", .{i});
+            }
+            if (gw.gw_test_mismatched_sums(&ctx) != 0) {
+                errored_just = true;
+                log("ERROR: mismatched sums @ {}\n", .{i});
+            }
+            if (gw.gw_get_maxerr(&ctx) >= 0.40) {
+                errored_just = true;
+                log("ERROR: maxerr > 0.4 @ {} = {}\n", .{ i, gw.gw_get_maxerr(&ctx) });
+            }
+        }
     }
     // math logging condition
     if (n >= 10000) {
@@ -98,11 +138,6 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     }
     const llr_took = std.time.milliTimestamp() - llr_start;
     try stdout.print("LLR took {}ms\n", .{llr_took});
-
-    const limit_hit: c_int = gw.gwnear_fft_limit(&ctx, 0.1);
-    if (limit_hit == 1) {
-        log("WARNING: hit fft limit, result probably wrong\n", .{});
-    }
 
     const residue_zero = gw.gwiszero(&ctx, u) == 1;
     if (residue_zero) {
