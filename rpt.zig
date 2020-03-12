@@ -15,7 +15,7 @@ const llr = @import("llr.zig");
 const selftest = @import("selftest.zig");
 const argparser = @import("argparser.zig");
 
-const VERSION = "0.0.4";
+const VERSION = "0.1.0";
 
 pub fn main() !void {
     // let's be really nice
