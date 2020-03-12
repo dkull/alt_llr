@@ -10,14 +10,21 @@ const glue = @import("glue.zig");
 
 pub fn create_gwhandle(ctx: *gw.gwhandle, threads: u8, k: u32, n: u32) void {
     gw.gwinit2(ctx, @sizeOf(gw.gwhandle), gw.GWNUM_VERSION);
-    gw.gwset_square_carefully_count(ctx, 50);
-    ctx.safety_margin = 0.0001;
-    //ctx.safety_margin = -1.0;
-    ctx.use_large_pages = 1;
+
+    // features
+    ctx.use_large_pages = 1; // seems to be FUTURE feature
     ctx.num_threads = threads;
     ctx.will_hyperthread = threads;
     ctx.bench_num_cores = threads;
-    ctx.will_error_check = 1;
+
+    // safety
+    //ctx.larger_fftlen_count = 0;
+    //ctx.safety_margin = 0.3;
+    gw.gwset_square_carefully_count(ctx, 50);
+    //ctx.use_irrational_general_mod = 1;
+    //ctx.sum_inputs_checking = 1;
+    //ctx.will_error_check = 1;
+
     const _na = gw.gwsetup(ctx, @intToFloat(f64, k), 2, n, -1);
 }
 
