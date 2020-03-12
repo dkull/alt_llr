@@ -1,3 +1,14 @@
+0.1.0
+-----
+
+* fixed issue with gwstartnextfft false-negatives
+* selftest success at least up to n=120000 (for k<300)
+* print LLR64 compatible residue
+* automatic niceness 19 (not configurable)
+* extra logging when errors happen (won't catch all)
+* result output says 'maybe' if errors were seen
+* speed still on par with LLR64
+
 0.0.4
 -----
 
