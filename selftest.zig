@@ -59,9 +59,9 @@ pub fn run(max_n: u32) !void {
 
         if (testcase_ready) {
             testcase_ready = false;
-            stderr(". testing positive case k:{} n:{}\n", .{ current_k, current_n });
+            stderr("##### testing positive case k:{} n:{} #####\n", .{ current_k, current_n });
             const positive_case = try llr.full_llr_run(current_k, 2, current_n, -1, 1);
-            stderr(". testing negative case k:{} n:{}\n", .{ current_k, current_n - 1 });
+            stderr("##### testing negative case k:{} n:{} #####\n", .{ current_k, current_n - 1 });
             const negative_case = blk: {
                 if (current_n - 1 != previous_n) {
                     break :blk try llr.full_llr_run(current_k, 2, current_n - 1, -1, 1);
@@ -73,7 +73,7 @@ pub fn run(max_n: u32) !void {
                 stderr("--TEST FAILED-- {} {}\n", .{ positive_case, negative_case });
                 return;
             } else {
-                stderr("k:{} n:{} vs. n:{} checks out\n", .{ current_k, current_n, current_n - 1 });
+                stderr("##### k:{} n:{} vs. n:{} checks out #####\n", .{ current_k, current_n, current_n - 1 });
             }
         }
     }
