@@ -1,0 +1,8 @@
+Prime95-*/
+gmp-6*/
+zig-cache/
+*.tar.*
+./rpt
+rpt_release*
+*.o
+buildscripts/
