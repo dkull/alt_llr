@@ -146,3 +146,21 @@ while (i := 1) : (i < n - 1) : (i += 1) {
 }
 'prime!' if u == 0
 ```
+
+Linked library licenses
+-----------------------
+The source code of this project contains no third party licensed code.
+The linking process links to GMP and gwnum libraries. Both have their own license.
+
+The gwnum library requires that users of the binary to agree to the license in:
+https://github.com/shafferjohn/Prime95/blob/master/gwnum/readme.txt
+In particular:
+```
+(2) If this software is used to find Mersenne Prime numbers, then
+GIMPS will be considered the discoverer of any prime numbers found
+and the prize rules at http://mersenne.org/prize.htm will apply.
+```
+
+GMP is incorporated under LGPL v3:
+https://www.gnu.org/licenses/lgpl-3.0.en.html
+https://www.gnu.org/licenses/lgpl-3.0.en.html
