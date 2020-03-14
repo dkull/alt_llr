@@ -12,7 +12,7 @@ pub fn create_gwhandle(ctx: *gw.gwhandle, threads: u8, k: u32, n: u32) void {
     gw.gwinit2(ctx, @sizeOf(gw.gwhandle), gw.GWNUM_VERSION);
 
     // features
-    ctx.use_large_pages = 1; // seems to be FUTURE feature
+    ctx.use_large_pages = 1;
     ctx.num_threads = threads;
     ctx.will_hyperthread = threads;
     ctx.bench_num_cores = threads;
@@ -20,7 +20,8 @@ pub fn create_gwhandle(ctx: *gw.gwhandle, threads: u8, k: u32, n: u32) void {
     // safety
     //ctx.larger_fftlen_count = 0;
     //ctx.safety_margin = 0.3;
-    gw.gwset_square_carefully_count(ctx, 50);
+    // we do the careful squating explicitly
+    //gw.gwset_square_carefully_count(ctx, 50);
     //ctx.use_irrational_general_mod = 1;
     ctx.sum_inputs_checking = 1;
     ctx.will_error_check = 1;
@@ -69,7 +70,8 @@ pub fn benchmark_threads(u0_gmp: gmp.mpz_t, k: u32, n: u32) u8 {
 }
 
 ///
-/// copied from https://ziglang.org/documentation/master/#toc-Error-Union-Type
+/// copied from official Zig docs
+/// https://ziglang.org/documentation/master/#toc-Error-Union-Type
 ///
 pub fn parseU64(buf: []const u8, radix: u8) !u64 {
     var x: u64 = 0;
@@ -97,9 +99,4 @@ fn charToDigit(ch: u8) u8 {
         'a'...'z' => ch - 'a' + 10,
         else => maxInt(u8),
     };
-}
-
-test "parse u64" {
-    const result = try parseU64("1234", 10);
-    std.debug.assert(result == 1234);
 }

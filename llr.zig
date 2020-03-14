@@ -19,7 +19,7 @@ pub fn get_residue(ctx: *gw.gwhandle, u: gw.gwnum, output: *[32]u8) !void {
     var g: gw.giant = gw.popg(&gdata, 0);
     const success = gw.gwtogiant(ctx, u, g);
     //log("bitlen {}\n", .{gw.bitlen(g)});
-    const succ = try fmt.bufPrint(output, "{X:0>8}{X:0>8}", .{ g.*.n[1], g.*.n[0] });
+    const succ = try fmt.bufPrint(output, "{X:0>4}{X:0>4}", .{ g.*.n[1], g.*.n[0] });
 }
 
 pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
@@ -76,7 +76,9 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     var next_log_i = i;
     var errored = false;
     var near_fft = false;
+    const careful_bounds: u32 = 50;
     const i_penultimate: u32 = n - 1;
+    const upto_careful: u32 = @intCast(u32, n - 1 - careful_bounds);
     // this subtracts 2 after every squaring
     gw.gwsetaddin(&ctx, -2);
     while (i < i_penultimate) : (i += 1) {
@@ -94,13 +96,14 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
         }
 
         // gwstartnextfft may ruin the results if run under
-        // incorrect conditions. -31 and -30 seem to work (copied from LLR64)
-        if (i >= 30 and i < @intCast(i32, i_penultimate - 31)) {
+        // incorrect conditions. gwstartnextfft needs to be
+        // 1 less then gwsquare
+        if (i >= careful_bounds and i < upto_careful - 1) {
             gw.gwstartnextfft(&ctx, 1);
         } else {
             gw.gwstartnextfft(&ctx, 0);
         }
-        if (i >= 30 and i < @intCast(i32, i_penultimate - 30)) {
+        if (i >= careful_bounds and i < upto_careful) {
             gw.gwsquare2(&ctx, u, u);
         } else {
             gw.gwsquare2_carefully(&ctx, u, u);
@@ -131,7 +134,7 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
             }
         }
     }
-    // math logging condition
+    // cosmetic progressbar end tick
     if (n >= 10000) {
         try stdout.print("X\n", .{});
     }

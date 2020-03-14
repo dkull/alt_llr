@@ -45,9 +45,10 @@ pub fn find_V1(N: gmp.mpz_t) u32 {
     unreachable;
 }
 
-/// currently used as the fastest solution even for large k's
-/// translated over from Jean Penne's LLR64 Llr.c
-/// FIXME: use gwnum here? would be totally free of GMP
+/// this is O(log(len(n))) lucas sequence algorithm
+/// fastest solution even for large k's
+/// ! current default
+/// FIXME: use gwnum here?
 pub fn do_fastest_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
     var k_tmp: gmp.mpz_t = undefined;
     gmp.mpz_init(&k_tmp);
@@ -130,7 +131,7 @@ pub fn do_fastest_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_
 
 /// body method for do_fast_lucas_sequence
 /// !!! slow - not used currently
-fn fast(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
+fn fast_inner(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
     // required precision 102765*2^333354[100355 digits] == 1KB*227 (0.44)
     // required precision     81*2^240743[72473 digits] == 130 (0.62)
     // required precision  17295*2^217577[65502 digits] == 1KB*54 (0.31) [fft 16K]
@@ -198,8 +199,9 @@ fn fast(_m: u32, _x: u32, N: gmp.mpz_t) gmp.mpz_t {
 /// if you have the Jacobi calculation results
 /// currently unused as it requires too much floating precision with large k's
 /// and thus get's unbearably slow with k's in the millions
+/// this is probably a more optical solution for small k's
 /// caller owns the result
-/// !!! slow - not used currently
+/// !!! slow for large k - not used currently
 pub fn do_fast_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
     // P_generic(b * k // mpz2, P_generic(b // mpz2, mpz(4), debug), debug)
     var P: gmp.mpz_t = undefined;
@@ -207,17 +209,17 @@ pub fn do_fast_lucas_sequence(k: u32, _P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
     gmp.mpz_set_ui(&P, _P);
 
     // technically it should be b / 2', but b is 2 for us, so just '1'
-    const inner = fast(1, _P, N);
+    const inner = fast_inner(1, _P, N);
     const buf = @intCast(u32, gmp.mpz_get_ui(&inner));
     // technically it should be 'b * k / 2', but b is 2 for us, so just 'k'
-    const result = fast(k, buf, N);
+    const result = fast_inner(k, buf, N);
 
     // result is actually a working U0
     return result;
 }
 
 /// caller owns the result
-/// !!! slow - not used currently
+/// !!! slow for large k - not used currently
 pub fn do_iterative_lucas_sequence(k: u32, P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz_t {
     // Vk(P,1) mod N ==
     //  xn = P * Xn-1 - Q * xn-2
@@ -270,7 +272,7 @@ pub fn do_iterative_lucas_sequence(k: u32, P: u32, Q: u32, N: gmp.mpz_t) gmp.mpz
 pub fn find_u0(k: u32, n: u32, N: gmp.mpz_t, u_zero_out: *gmp.mpz_t) !void {
     var V1: u32 = undefined;
     if (k % 3 != 0) {
-        try stdout.print("SHORTCUT: using V1=4 because [k % 3 != 0]\n", .{});
+        try stdout.print("using V1=4 because [k % 3 != 0]\n", .{});
         V1 = 4;
     } else {
         // do the Jacobi to find V1
