@@ -142,7 +142,7 @@ u = u0 = x mod N
 
 # Lucas-Lehmer-Riesel primality test starting from U0
 while (i := 1) : (i < n - 1) : (i += 1) {
-    u = (u * u) - 2
+    u = (u * u) - 2 mod N
 }
 'prime!' if u == 0
 ```
