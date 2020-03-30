@@ -43,15 +43,21 @@ pub fn full_fermat_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     //var testdata = [2]usize{ 0, 0 };
     while (i < 0xFFFFFFFF) : (i -= 1) {
         const bit_set = gmp.mpz_tstbit(&N_min_1, i) == 1;
-        //var success = gw.gwtobinarylongs(&ctx, buf, &testdata, 4);
-        //log("{} bufvalsquared: {}\n", .{ success, testdata[0] });
+        const start_next = i > 60 and i < N_min_1_bits - 60;
         if (bit_set) {
             // mult by prp base after squaring
-            //gw.gwsetmulbyconst(&ctx, PRP_BASE);
-            gw.gwsmallmul(&ctx, PRP_BASE, buf);
-            //gw.gwsafemul(&ctx, gw_base, buf);
+            gw.gwsetmulbyconst(&ctx, PRP_BASE);
+        }
+        if (start_next) {
+            gw.gwstartnextfft(&ctx, 1);
         }
         gw.gwsquare2(&ctx, buf, buf);
+        if (!bit_set) {
+            gw.gwsetmulbyconst(&ctx, 0);
+        }
+        if (start_next) {
+            gw.gwstartnextfft(&ctx, 0);
+        }
     }
     var gw_one: gw.gwnum = gw.gwalloc(&ctx);
     glue.gmp_to_gw(gmp_one, gw_one, &ctx);

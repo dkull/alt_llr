@@ -1,6 +1,6 @@
 const std = @import("std");
 const stderr = std.debug.warn;
-const stdout = &std.io.getStdOut().outStream().stream;
+const stdout = &std.io.getStdOut().outStream();
 const assert = @import("std").debug.assert;
 
 const c = @import("c.zig");
@@ -12,6 +12,7 @@ const glue = @import("glue.zig");
 const u_zero = @import("u_zero.zig");
 const helper = @import("helper.zig");
 const llr = @import("llr.zig");
+const fermat = @import("fermat.zig");
 const selftest = @import("selftest.zig");
 const argparser = @import("argparser.zig");
 
@@ -39,6 +40,14 @@ pub fn main() !void {
             const b: u32 = 2;
             const c_: i32 = -1;
             const is_prime = try llr.full_llr_run(k, b, n, c_, threads);
+        },
+        argparser.RunMode.Fermat => {
+            const threads = parsed_args.threads;
+            const k = parsed_args.k;
+            const n = parsed_args.n;
+            const b: u32 = 2;
+            const c_: i32 = -1;
+            const is_prime = try fermat.full_fermat_run(k, b, n, c_, threads);
         },
         argparser.RunMode.Selftest => {
             const n = parsed_args.n;

@@ -1,6 +1,6 @@
 const std = @import("std");
 const log = std.debug.warn;
-const stdout = &std.io.getStdOut().outStream().stream;
+const stdout = &std.io.getStdOut().outStream();
 
 const c = @import("c.zig");
 const gmp = c.gmp;

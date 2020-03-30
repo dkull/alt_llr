@@ -7,6 +7,7 @@ const helper = @import("helper.zig");
 pub const RunMode = enum {
     Help,
     LLR,
+    Fermat,
     Selftest,
 };
 
@@ -26,6 +27,11 @@ pub const ParsedArgs = struct {
         for (args) |arg, i| {
             if (arg.len == 5 and mem.eql(u8, arg[0..5], "--llr"[0..5])) {
                 mode = RunMode.LLR;
+                k = @intCast(u32, try helper.parseU64(args[i + 1], 10));
+                n = @intCast(u32, try helper.parseU64(args[i + 2], 10));
+            }
+            if (arg.len == 8 and mem.eql(u8, arg[0..8], "--fermat"[0..8])) {
+                mode = RunMode.Fermat;
                 k = @intCast(u32, try helper.parseU64(args[i + 1], 10));
                 n = @intCast(u32, try helper.parseU64(args[i + 2], 10));
             }
