@@ -13,7 +13,7 @@ const helper = @import("helper.zig");
 const u_zero = @import("u_zero.zig");
 
 pub fn full_fermat_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
-    const PRP_BASE = 2;
+    const PRP_BASE: usize = 2;
     var N: gmp.mpz_t = u_zero.calculate_N(k, n);
 
     const n_digits = gmp.mpz_sizeinbase(&N, 10);
@@ -46,18 +46,28 @@ pub fn full_fermat_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
         const start_next = i > 60 and i < N_min_1_bits - 60;
         if (bit_set) {
             // mult by prp base after squaring
-            gw.gwsetmulbyconst(&ctx, PRP_BASE);
+            //gw.gwsetmulbyconst(&ctx, PRP_BASE);
         }
-        if (start_next) {
-            gw.gwstartnextfft(&ctx, 1);
+        //if (start_next) {
+        //    gw.gwstartnextfft(&ctx, 1);
+        //} else {
+        //    gw.gwstartnextfft(&ctx, 0);
+        //}
+        if (start_next or i == 60) {
+            gw.gwsquare2(&ctx, buf, buf);
+        } else {
+            gw.gwsquare2_carefully(&ctx, buf, buf);
         }
-        gw.gwsquare2(&ctx, buf, buf);
-        if (!bit_set) {
-            gw.gwsetmulbyconst(&ctx, 0);
+        //if (start_next) {
+        //    gw.gwstartnextfft(&ctx, 1);
+        //} else {
+        //    gw.gwstartnextfft(&ctx, 0);
+        //}
+        if (bit_set) {
+            gw.gwsmallmul(&ctx, PRP_BASE, buf);
+            //gw.gwsetmulbyconst(&ctx, 0);
         }
-        if (start_next) {
-            gw.gwstartnextfft(&ctx, 0);
-        }
+        if (start_next) {}
     }
     var gw_one: gw.gwnum = gw.gwalloc(&ctx);
     glue.gmp_to_gw(gmp_one, gw_one, &ctx);
