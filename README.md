@@ -1,34 +1,40 @@
 # RPT - Riesel Prime Tester
 *Experimental* Lucas-Lehmer-Riesel primality tester.
 
-Note
-----
-This project is in no way 'production ready', it does not check errors and does not save state. I wouldn't recommend swapping out your LLR64's for this (yet). Although I have noticed that if a CPU is stable with LLR (for a while), it should be okay to run it without error checking...am I right about this?
+Notes
+-----
+This project is not production ready - it does not guarantee error checks and does not save state.
 
-Also, it is important to note that this software and Jean Penné's software (LLR64 http://jpenne.free.fr/index2.html) do (almost) exactly the same thing, using the same libraries. So there are no dramatic performance gains to be had - we both rely on the speed of the GWNum library. RPT should is exactly as fast as LLR64.
+Both Jean Penné's software (LLR64 http://jpenne.free.fr/index2.html) and RPT are based on the same libraries - gwnum and GMP. So there are no dramatic performance gains/losses to be had. Currently RPT matches the speed of LLR64.
 
-k and n are currently limited to unsigned 32 bit values (~4.29Bil) for arbitrary reasons. I don't see a need for supporting larger values.
-As Riesel states in his paper (Prime Numbers and Computer Methods for Factorization p126 [2012]) this condition must hold for the test to work: 2^n > 4k. This software does currently not notify you if this condition does not hold.
+k and n are currently limited to unsigned 32 bit values (~4.29Bil) for arbitrary reasons.
+
+As Riesel states in his paper (Prime Numbers and Computer Methods for Factorization p126 [2012]) the following condition must hold for the test to work: 2^n > 4k. This software does currently not notify you if this condition does not hold.
+
+Features
+--------
+* LLR testing of Riesel prime candidates
+* LLR testing matches the speed of LLR64
+* Selftest with known primes for LLR
+* Fermat PRP testing of Riesel prime candidates (WIP)
 
 What this project is
 --------------------
 This is me being interested in how the Lucas-Lehmer-Riesel primality proving works - from end to end. I first ran Jean's LLR64 software in 2007 and found my first primes that got into the TOP5000 (https://primes.utm.edu/primes/lists/all.txt). I stopped for over a decade, but the topic always lingered in my mind. In 2019 I started sieving/testing again and the curiosity got the best of me and I decided to implement most of what LLR64 does with Riesel Primes.
 
-The core LLR loop is actually trivial and can be implemented in no time. Much of the complexity comes from needing to find U0 for k > 1. Eg. for Mersenne primes (k=1) U0==4. For k>1 U0 needs to be calculated, and naive implementations are slow for large k's. I have three different (naive, less-naive and optimal) implementations in this project. The optimal one is the same one used in LLR64, which runs in O(log(bitlen(k))) time.
+The core LLR loop is actually trivial and can be implemented in no time. Much of the complexity comes from needing to find U0 for k > 1. Eg. for Mersenne primes (k=1) U0==4. For k > 1 U0 needs to be calculated, and naive implementations are slow for large k's. I have three different (naive, less-naive and optimal) implementations in this project. The optimal one runs in O(log2(k)) time and is the default.
 
-This project will probably also implement the PRP primality testing used in PFGW (https://sourceforge.net/projects/openpfgw/)
+This project will probably also implement the PRP primality testing used in PFGW (https://sourceforge.net/projects/openpfgw/). This is currently WIP, but should work for most cases.
 
 What this project is not
 ------------------------
-This is not an attempt to replace LLR64. LLR64 has a lot of years of work behind it, in both features and stability/safety. This project is no match to that. This project does not aim to provide factoring, trivial candidate elimination, resumability, safety, support for different prime formats, etc.
+This is not an attempt to replace LLR64. LLR64 has a lot of years of work behind it, in both features and stability/safety. This project does not aim to provide factoring, trivial candidate elimination, resumability, guaranteed safety, support for different prime formats, etc.
+
 
 Building
 --------
-
 Requires the Zig compiler. GWnum(included in Prime95) and GMP need to be directly in the project directory. 
 Both GWnum and GMP dependencies need to be built first in their respective ways. They are not complicated to build. The Zig compiler can be downloaded in binary form from https://ziglang.org/download/
-
-I am considering using only GWnum and dropping GMP. But it seems like a safe bet to keep onto GMP for other Riesel Prime proving/PRP methods.
 
 ```
 Zig: tested with 0.5-master (not a stable version)
@@ -63,6 +69,7 @@ Selftest tests known primes k < 300, their n, and counter cases: n-1 [if not kno
 
 Options:
 $ ./rpt --llr <k> <n> [--threads <t>]
+$ ./rpt --fermat <k> <n> [--threads <t>]
 $ ./rpt --selftest <max_n>
 
 Simple example:
@@ -108,7 +115,7 @@ step #2 LLR test ...
 LLR took 55818ms
 #> 39547695*2^506636-1 [152521 digits] IS PRIME
 ```
-Pseudocode of the whole thing
+Pseudocode of the LLR test
 -----------------------------
 ```
 const k, n, b, c;  # they have to have values
@@ -162,5 +169,4 @@ and the prize rules at http://mersenne.org/prize.htm will apply.
 ```
 
 GMP is incorporated under LGPL v3:
-https://www.gnu.org/licenses/lgpl-3.0.en.html
 https://www.gnu.org/licenses/lgpl-3.0.en.html
