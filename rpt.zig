@@ -16,7 +16,7 @@ const fermat = @import("fermat.zig");
 const selftest = @import("selftest.zig");
 const argparser = @import("argparser.zig");
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 pub fn main() !void {
     // let's be really nice
@@ -58,4 +58,8 @@ pub fn main() !void {
             try stdout.print("./rpt --selftest [--threads <t>]\n", .{});
         },
     }
+}
+
+export fn llr_ext(k: u32, b: u32, n: u32, c_: i32, threads_: u8) bool {
+    return llr.full_llr_run(k, b, n, c_, threads_) catch false;
 }

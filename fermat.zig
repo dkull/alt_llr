@@ -17,7 +17,7 @@ pub fn full_fermat_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     var N: gmp.mpz_t = u_zero.calculate_N(k, n);
 
     const n_digits = gmp.mpz_sizeinbase(&N, 10);
-    log("Fermat-PRP testing: {}*{}^{}{} [{} digits] on {} threads\n", .{ k, b, n, c_, n_digits, threads_ });
+    log("Fermat {}-PRP testing: {}*{}^{}{} [{} digits] on {} threads\n", .{ PRP_BASE, k, b, n, c_, n_digits, threads_ });
 
     var N_min_1: gmp.mpz_t = undefined;
     gmp.mpz_init_set(&N_min_1, &N);
@@ -33,49 +33,60 @@ pub fn full_fermat_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     var ctx: gw.gwhandle = undefined;
     helper.create_gwhandle(&ctx, threads_, k, n);
 
+    var final_ctx: gw.gwhandle = undefined;
+    helper.create_gwhandle(&final_ctx, threads_, k, n);
+
     var buf: gw.gwnum = gw.gwalloc(&ctx);
     glue.gmp_to_gw(gmp_one, buf, &ctx);
 
     var gw_base: gw.gwnum = gw.gwalloc(&ctx);
     glue.gmp_to_gw(gmp_base, gw_base, &ctx);
 
-    var i: usize = N_min_1_bits - 1;
-    //var testdata = [2]usize{ 0, 0 };
-    while (i < 0xFFFFFFFF) : (i -= 1) {
-        const bit_set = gmp.mpz_tstbit(&N_min_1, i) == 1;
-        const start_next = i > 60 and i < N_min_1_bits - 60;
-        if (bit_set) {
-            // mult by prp base after squaring
-            //gw.gwsetmulbyconst(&ctx, PRP_BASE);
-        }
-        //if (start_next) {
-        //    gw.gwstartnextfft(&ctx, 1);
-        //} else {
-        //    gw.gwstartnextfft(&ctx, 0);
-        //}
-        if (start_next or i == 60) {
-            gw.gwsquare2(&ctx, buf, buf);
-        } else {
-            gw.gwsquare2_carefully(&ctx, buf, buf);
-        }
-        //if (start_next) {
-        //    gw.gwstartnextfft(&ctx, 1);
-        //} else {
-        //    gw.gwstartnextfft(&ctx, 0);
-        //}
-        if (bit_set) {
-            gw.gwsmallmul(&ctx, PRP_BASE, buf);
-            //gw.gwsetmulbyconst(&ctx, 0);
-        }
-        if (start_next) {}
-    }
     var gw_one: gw.gwnum = gw.gwalloc(&ctx);
     glue.gmp_to_gw(gmp_one, gw_one, &ctx);
 
-    var is_prp = gw.gwequal(&ctx, buf, gw_one);
+    var i: usize = N_min_1_bits - 1;
+    // we activate this with the setting of ctx.NORMNUM
+    gw.gwsetmulbyconst(&ctx, PRP_BASE);
+    while (i < 0xFFFFFFFF) : (i -= 1) {
+        if (i == 1 and 1 == gw.gwequal(&ctx, buf, gw_one)) {
+            log("!!! SANITY CHECK FAILED, PREMATURE PRP STATUS, THIS IS A BUG\n", .{});
+        }
+        // allow for 64 bit k to mangle the first bits
+        // this if/else allows us to not check bits in most of the number
+        const optimized_mult = i < N_min_1_bits - 64;
+        // first log2(k) bits _have_ to be handled here
+        if (!optimized_mult) {
+            const bit_set = gmp.mpz_tstbit(&N_min_1, i) == 1;
+            gw.gwsquare2(&ctx, buf, buf);
+            if (bit_set) {
+                gw.gwsmallmul(&ctx, PRP_BASE, buf);
+            }
+        } else {
+            // here we assume all bits are set (b/c we have Riesel numbers, they have all 1's after a point)
+            ctx.NORMNUM = 2;
+            if (i == 0) {
+                // turn off const multiplication for last bit, b/c it's 0 for some reason
+                ctx.NORMNUM = 0;
+            }
+            if (i > 50) {
+                gw.gwstartnextfft(&ctx, 1);
+            } else {
+                gw.gwstartnextfft(&ctx, 0);
+            }
+            const careful = i < 50;
+            if (careful) {
+                gw.gwsquare2_carefully(&ctx, buf, buf);
+            } else {
+                gw.gwsquare2(&ctx, buf, buf);
+            }
+        }
+    }
+
+    var is_prp = gw.gwequal(&final_ctx, buf, gw_one);
     if (is_prp == 1) {
         const maybe = "maybe";
-        log("#> {}*{}^{}{} [{} digits] IS PROBABLY PRIME\n", .{ k, b, n, c_, n_digits });
+        log("#> {}*{}^{}{} [{} digits] IS {}-PRP!\n", .{ k, b, n, c_, n_digits, PRP_BASE });
     } else {
         log("#> {}*{}^{}{} [{} digits] is not prime ({})\n", .{
             k,
