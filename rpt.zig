@@ -55,7 +55,8 @@ pub fn main() !void {
         },
         argparser.RunMode.Help => {
             try stdout.print("./rpt --llr <k> <n> [--threads <t>]\n", .{});
-            try stdout.print("./rpt --selftest [--threads <t>]\n", .{});
+            try stdout.print("./rpt --fermat <k> <n> [--threads <t>]\n", .{});
+            try stdout.print("./rpt --selftest [max_n]\n", .{});
         },
     }
 }

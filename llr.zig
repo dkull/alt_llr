@@ -13,13 +13,13 @@ const u_zero = @import("u_zero.zig");
 const test_data = @import("test_data.zig");
 const helper = @import("helper.zig");
 
-pub fn get_residue(ctx: *gw.gwhandle, u: gw.gwnum, output: *[32]u8) !void {
+pub fn get_residue(ctx: *gw.gwhandle, u: gw.gwnum, output: *[16]u8) !void {
     var gdata = ctx.gdata;
     // FIXME: this 0 needs to be size of giants buffer
     var g: gw.giant = gw.popg(&gdata, 0);
     const success = gw.gwtogiant(ctx, u, g);
     //log("bitlen {}\n", .{gw.bitlen(g)});
-    const succ = try fmt.bufPrint(output, "{X:0>4}{X:0>4}", .{ g.*.n[1], g.*.n[0] });
+    const succ = try fmt.bufPrint(output, "{X:0>8}{X:0>8}", .{ g.*.n[1], g.*.n[0] });
 }
 
 pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
@@ -52,23 +52,14 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     var ctx: gw.gwhandle = undefined;
     helper.create_gwhandle(&ctx, threads, k, n);
 
-    // print and check fft size
-    const fft_size = gw.gwfftlen(&ctx) / 1024;
-    try stdout.print("FFT size {}KB\n", .{fft_size});
-    //if (threads > 1) {
-    //    if (fft_size / threads < MIN_THREAD_FFT_KB) {
-    //        try stdout.print(" [WARNING: Possibly too many threads for this FFT size]", .{});
-    //    }
-    //}
-    //try stdout.print("\n", .{});
-
     // move U0 from gmp to gw
     // this has to be the first gwalloc to get large pages
     // TODO: Verify we got large pages
     var u: gw.gwnum = gw.gwalloc(&ctx);
     glue.gmp_to_gw(u0_gmp, u, &ctx);
 
-    try stdout.print("step #2 LLR test ...\n", .{});
+    const fft_size = gw.gwfftlen(&ctx) / 1024;
+    try stdout.print("step #2 LLR test using FFT size {}KB\n", .{fft_size});
     const llr_start = std.time.milliTimestamp();
 
     // core LLR loop
@@ -78,7 +69,7 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     var near_fft = false;
     const careful_bounds: u32 = 50;
     const i_penultimate: u32 = n - 1;
-    const upto_careful: u32 = @intCast(u32, n - 1 - careful_bounds);
+    const upto_careful: u32 = @intCast(u32, n - 1 - helper.min(u32, careful_bounds, n - 1));
     // this subtracts 2 after every squaring
     gw.gwsetaddin(&ctx, -2);
     while (i < i_penultimate) : (i += 1) {
@@ -136,18 +127,18 @@ pub fn full_llr_run(k: u32, b: u32, n: u32, c_: i32, threads_: u8) !bool {
     }
     // cosmetic progressbar end tick
     if (n >= 10000) {
-        try stdout.print("X\n", .{});
+        try stdout.print("X ", .{});
     }
 
     const llr_took = std.time.milliTimestamp() - llr_start;
-    try stdout.print("LLR took {}ms\n", .{llr_took});
+    try stdout.print("[{}ms]\n", .{llr_took});
 
     const maybe = if (errored) "maybe " else "";
     const residue_zero = gw.gwiszero(&ctx, u) == 1;
     if (residue_zero) {
         log("#> {}*{}^{}{} [{} digits] IS {}PRIME\n", .{ k, b, n, c_, n_digits, maybe });
     } else {
-        var residue: [32]u8 = undefined;
+        var residue: [16]u8 = undefined;
         try get_residue(&ctx, u, &residue);
         log("#> {}*{}^{}{} [{} digits] is {}not prime. LLR Res64: {}\n", .{ k, b, n, c_, n_digits, maybe, residue });
     }

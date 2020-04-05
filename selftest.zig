@@ -3,6 +3,7 @@ const stderr = std.debug.warn;
 
 const test_data = @embedFile("test_cases.dat");
 const llr = @import("llr.zig");
+const fermat = @import("fermat.zig");
 const helper = @import("helper.zig");
 
 // LLR test expects n not to be too small in relation to k
@@ -13,6 +14,7 @@ pub fn run(max_n: u32) !void {
         ReadingK,
         ReadingN,
     };
+    stderr("maxn: {}\n", .{max_n});
 
     var current_k: u32 = 0;
     var current_n: u32 = 0;
@@ -24,6 +26,12 @@ pub fn run(max_n: u32) !void {
     var buf_ptr: u32 = 0;
     var skip_next: u32 = 0;
     var testcase_ready = false;
+
+    var positive_tests_run: u32 = 0;
+    var negative_tests_run: u32 = 0;
+    var negative_fermat_failures: u32 = 0;
+
+    var failures: u32 = 0;
     for (test_data) |b| {
         // should end reading number and parse it
         if (skip_next > 0) {
@@ -58,24 +66,45 @@ pub fn run(max_n: u32) !void {
         }
 
         if (testcase_ready) {
+            stderr("\n", .{});
             testcase_ready = false;
+            positive_tests_run += 1;
             stderr("##### testing positive case k:{} n:{} #####\n", .{ current_k, current_n });
-            const positive_case = try llr.full_llr_run(current_k, 2, current_n, -1, 1);
-            stderr("##### testing negative case k:{} n:{} #####\n", .{ current_k, current_n - 1 });
-            const negative_case = blk: {
+            const positive_case_llr = try llr.full_llr_run(current_k, 2, current_n, -1, 1);
+            const positive_case_fermat = try fermat.full_fermat_run(current_k, 2, current_n, -1, 1);
+            const positive_case = positive_case_llr and positive_case_fermat;
+            stderr("\n##### testing negative case k:{} n:{} [{}-1] #####\n", .{ current_k, current_n - 1, current_n });
+            const negative_case_llr = blk: {
                 if (current_n - 1 != previous_n) {
+                    negative_tests_run += 1;
                     break :blk try llr.full_llr_run(current_k, 2, current_n - 1, -1, 1);
                 } else {
                     break :blk false;
                 }
             };
-            if (positive_case != true or negative_case != false) {
-                stderr("--TEST FAILED-- {} {}\n", .{ positive_case, negative_case });
-                return;
+            const negative_case_fermat = blk: {
+                if (current_n - 1 != previous_n) {
+                    break :blk try fermat.full_fermat_run(current_k, 2, current_n - 1, -1, 1);
+                } else {
+                    break :blk false;
+                }
+            };
+            if (negative_case_fermat) {
+                negative_fermat_failures += 1;
+            }
+            if (positive_case != true or negative_case_llr != false) {
+                failures += 1;
+                stderr("--TEST FAILED-- {}*2^{}-1 pos case?: {} llr_neg?: {}\n", .{ current_k, current_n, positive_case, negative_case_llr });
+                //return;
             } else {
                 stderr("##### k:{} n:{} vs. n:{} checks out #####\n", .{ current_k, current_n, current_n - 1 });
             }
         }
     }
-    stderr("TESTS COMPLETED! all good\n", .{});
+    if (failures > 0) {
+        stderr("TESTS COMPLETED! {} failures\n", .{failures});
+    } else {
+        stderr("TESTS COMPLETED! all good\n", .{});
+    }
+    stderr("total pos: {} neg: {} fermat liars: {} [0 is the best possible result]\n", .{ positive_tests_run, negative_tests_run, negative_fermat_failures });
 }

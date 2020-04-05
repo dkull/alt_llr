@@ -69,6 +69,10 @@ pub fn benchmark_threads(u0_gmp: gmp.mpz_t, k: u32, n: u32) u8 {
     return best_threadcount;
 }
 
+pub fn min(comptime T: type, a: T, b: T) T {
+    return if (a <= b) a else b;
+}
+
 ///
 /// copied from official Zig docs
 /// https://ziglang.org/documentation/master/#toc-Error-Union-Type
